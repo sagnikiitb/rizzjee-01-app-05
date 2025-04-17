@@ -72,11 +72,10 @@ export function Chat({
       />
       {/*
         Render the ChatOutput component only after the model has completely output the answer.
-        Passing the complete assistant message along with messages and setMessages so that hashtags
-        (annotations) can be computed and updated in persistent chat history.
+        Here, only the complete answer text is passed to ChatOutput.
       */}
       {!isLoading && lastAssistantMessage && (
-        <ChatOutput message={lastAssistantMessage} messages={messages} setMessages={setMessages} />
+        <ChatOutput answer={lastAssistantMessage.content} />
       )}
       <ChatPanel
         input={input}
