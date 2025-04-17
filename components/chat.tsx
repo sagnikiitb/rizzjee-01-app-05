@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { CHAT_ID } from '@/lib/constants'
 import { Model } from '@/lib/types/models'
 import { Message, useChat } from 'ai/react'
@@ -46,9 +48,10 @@ export function Chat({
     sendExtraMessageFields: false // Disable extra message fields
   })
 
+  // Updated dependency array to include savedMessages and setMessages
   useEffect(() => {
     setMessages(savedMessages)
-  }, [id])
+  }, [id, savedMessages, setMessages])
 
   const onQuerySelect = (query: string) => {
     append({
@@ -75,7 +78,7 @@ export function Chat({
         isLoading={isLoading}
         chatId={id}
       />
-      {/* Render the wikified output for the last assistant message */}
+      {/* Render the wikified output for the last assistant message if available */}
       {lastAssistantMessage && (
         <ChatOutput answer={lastAssistantMessage.content} />
       )}
