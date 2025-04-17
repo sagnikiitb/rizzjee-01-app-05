@@ -10,17 +10,22 @@ const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
   const [error, setError] = useState<string>("")
 
   useEffect(() => {
+    // When the answer prop changes, fetch the wikified content.
     (async () => {
       try {
         const wikified = await wikifyText(answer)
-        setWikifiedAnswer(wikified)
+        // Only update state if the result differs from the current state.
+        if (wikified !== wikifiedAnswer) {
+          setWikifiedAnswer(wikified)
+        }
       } catch (err: any) {
         console.error("Wikifier error:", err)
         setError("Unable to process wikification.")
+        // Optionally reset to original answer.
         setWikifiedAnswer(answer)
       }
     })()
-  }, [answer])
+  }, [answer]) // Only re-run when `answer` changes
 
   return (
     <div className="chat-output mt-4">
