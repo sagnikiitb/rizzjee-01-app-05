@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { CHAT_ID } from '@/lib/constants'
 import { Model } from '@/lib/types/models'
 import { Message, useChat } from 'ai/react'
-import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
@@ -48,11 +47,9 @@ export function Chat({
     sendExtraMessageFields: false // Disable extra message fields
   })
 
-  // Updated dependency array to include savedMessages and setMessages
-  useEffect(() => {
-    setMessages(savedMessages)
-  }, [id, savedMessages, setMessages])
-
+  // Removed useEffect that was calling setMessages every render.
+  // The initialMessages are already set when initializing the chat.
+  
   const onQuerySelect = (query: string) => {
     append({
       role: 'user',
