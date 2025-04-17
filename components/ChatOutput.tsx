@@ -6,62 +6,77 @@ interface Annotation {
 }
 
 interface ChatOutputProps {
-  // The full assistant message object which may have been augmented with annotations.
-  message: { role: string; content: string; annotations?: Annotation[] };
-  messages: any[];
-  setMessages: (messages: any[]) => void;
+  answer: string;
 }
 
-const ChatOutput: React.FC<ChatOutputProps> = ({ message, messages, setMessages }) => {
+const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [error, setError] = useState<string>("");
 
+  // Simple hash function to uniquely identify an answer string.
+  const hashCode = (str: string): number => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  };
+
   useEffect(() => {
-    // If annotations are already computed and stored in the message, use them.
-    if (message.annotations && message.annotations.length > 0) {
-      console.log("[ChatOutput] Using existing annotations from message.");
-      setAnnotations(message.annotations);
-      return;
+    const answerHash = hashCode(answer);
+    const localStorageKey = `wiki-annotations-${answerHash}`;
+    console.log("[ChatOutput] Checking localStorage for computed annotations with key:", localStorageKey);
+    const stored = localStorage.getItem(localStorageKey);
+
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          console.log("[ChatOutput] Found cached annotations in localStorage:", parsed);
+          setAnnotations(parsed);
+          return;
+        }
+      } catch (e) {
+        console.error("[ChatOutput] Error parsing stored annotations:", e);
+      }
     }
 
-    // Otherwise, call /api/wikify only once to compute annotations.
+    // If not found in localStorage, call the /api/wikify endpoint once.
     (async () => {
       try {
-        console.log("[ChatOutput] Fetching annotations for the complete assistant message.");
+        console.log("[ChatOutput] Fetching annotations for answer text via /api/wikify");
         const response = await fetch("/api/wikify", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ text: message.content }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: answer }),
         });
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Wikify API error: ${errorText}`);
         }
         const data = await response.json();
+        console.log("[ChatOutput] Received data from /api/wikify:", data);
         if (data.annotations && Array.isArray(data.annotations)) {
           const computedAnnotations = data.annotations.slice(0, 6);
-          console.log("[ChatOutput] Received annotations:", computedAnnotations);
+          console.log("[ChatOutput] Computed annotations:", computedAnnotations);
           setAnnotations(computedAnnotations);
-          // Update the engine's conversation history so that the annotations are saved persistently.
-          const updatedMessages = messages.map((msg) => {
-            if (msg === message) {
-              return { ...msg, annotations: computedAnnotations };
-            }
-            return msg;
-          });
-          setMessages(updatedMessages);
+          try {
+            localStorage.setItem(localStorageKey, JSON.stringify(computedAnnotations));
+            console.log("[ChatOutput] Cached annotations in localStorage with key:", localStorageKey);
+          } catch (e) {
+            console.error("[ChatOutput] Failed to store annotations in localStorage:", e);
+          }
         } else {
           console.warn("[ChatOutput] No annotations found in API response.");
           setAnnotations([]);
         }
       } catch (err: any) {
-        console.error("[ChatOutput] Wikifier error:", err);
+        console.error("[ChatOutput] Error while fetching annotations:", err);
         setError("Unable to retrieve Wikipedia keywords.");
       }
     })();
-  }, [message, messages, setMessages]);
+  }, [answer]);
 
   return (
     <div className="chat-output mt-4">
