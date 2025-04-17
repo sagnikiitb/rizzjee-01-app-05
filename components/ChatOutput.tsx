@@ -10,7 +10,7 @@ const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
   const [error, setError] = useState<string>("")
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       try {
         const wikified = await wikifyText(answer)
         setWikifiedAnswer(wikified)
