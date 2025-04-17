@@ -10,15 +10,12 @@ interface ChatOutputProps {
 }
 
 const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
-  // This state will hold the top 5-6 annotations (keywords with URLs)
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
     (async () => {
       try {
-        // Call our wikifier API route which is expected to return a JSON object
-        // with an "annotations" array containing { title, url } objects.
         const response = await fetch("/api/wikify", {
           method: "POST",
           headers: {
@@ -31,11 +28,10 @@ const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
           throw new Error(`Wikify API error: ${errorText}`);
         }
         const data = await response.json();
+        // Expecting annotations array in the JSON output, limit to 5-6 items.
         if (data.annotations && Array.isArray(data.annotations)) {
-          // Limit to top 5-6 annotations.
           setAnnotations(data.annotations.slice(0, 6));
         } else {
-          // If no annotations provided, clear any previous ones.
           setAnnotations([]);
         }
       } catch (err: any) {
