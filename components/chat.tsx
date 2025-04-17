@@ -73,10 +73,12 @@ export function Chat({
         chatId={id}
       />
       {/*
-        Instead of displaying the full LLM answer, we now only render the ChatOutput 
-        component which will display 5-6 clickable Wikipedia keywords derived from the annotations.
+        Render the ChatOutput component only after the model has completely output the answer.
+        This prevents multiple API calls to /api/wikify during the streaming/loading phase.
       */}
-      {lastAssistantMessage && <ChatOutput answer={lastAssistantMessage.content} />}
+      {!isLoading && lastAssistantMessage && (
+        <ChatOutput answer={lastAssistantMessage.content} />
+      )}
       <ChatPanel
         input={input}
         handleInputChange={handleInputChange}
