@@ -41,4 +41,4 @@ export async function POST(request: Request) {
     console.error('Error fetching Wikifier:', error);
     return NextResponse.json({ error: 'Failed to fetch Wikifier API' }, { status: 500 });
   }
-}https://github.com/sagnikiitb/rizzjee-01-app-05/blob/dev/app/api/wikify/route.ts
+}
