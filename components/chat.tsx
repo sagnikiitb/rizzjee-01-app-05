@@ -7,6 +7,7 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
+import ChatOutput from './ChatOutput'
 
 export function Chat({
   id,
@@ -62,6 +63,9 @@ export function Chat({
     handleSubmit(e)
   }
 
+  // Find the last assistant message if any.
+  const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant')
+
   return (
     <div className="flex flex-col w-full max-w-3xl pt-14 pb-40 mx-auto stretch">
       <ChatMessages
@@ -71,6 +75,10 @@ export function Chat({
         isLoading={isLoading}
         chatId={id}
       />
+      {/* Render the wikified output for the last assistant message */}
+      {lastAssistantMessage && (
+        <ChatOutput answer={lastAssistantMessage.content} />
+      )}
       <ChatPanel
         input={input}
         handleInputChange={handleInputChange}
