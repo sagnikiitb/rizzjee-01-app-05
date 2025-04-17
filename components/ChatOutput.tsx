@@ -1,38 +1,45 @@
-import React, { useEffect, useState } from "react"
-import { wikifyText } from "@/lib/tools/autoWikifier"
+import React, { useEffect, useState } from "react";
 
 interface ChatOutputProps {
-  answer: string
+  answer: string;
 }
 
 const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
-  const [wikifiedAnswer, setWikifiedAnswer] = useState<string>(answer)
-  const [error, setError] = useState<string>("")
+  const [wikifiedAnswer, setWikifiedAnswer] = useState<string>(answer);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    // When the answer prop changes, fetch the wikified content.
     (async () => {
       try {
-        const wikified = await wikifyText(answer)
-        // Only update state if the result differs from the current state.
-        if (wikified !== wikifiedAnswer) {
-          setWikifiedAnswer(wikified)
+        const response = await fetch("/api/wikify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: answer }),
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Wikify API error: ${errorText}`);
+        }
+        const data = await response.json();
+        if (data.wikifiedHTML && data.wikifiedHTML !== wikifiedAnswer) {
+          setWikifiedAnswer(data.wikifiedHTML);
         }
       } catch (err: any) {
-        console.error("Wikifier error:", err)
-        setError("Unable to process wikification.")
-        // Optionally reset to original answer.
-        setWikifiedAnswer(answer)
+        console.error("Wikifier error:", err);
+        setError("Unable to process wikification.");
+        setWikifiedAnswer(answer);
       }
-    })()
-  }, [answer]) // Only re-run when `answer` changes
+    })();
+  }, [answer]);
 
   return (
     <div className="chat-output mt-4">
       {error && <div className="error-message text-red-500">{error}</div>}
       <div dangerouslySetInnerHTML={{ __html: wikifiedAnswer }} />
     </div>
-  )
-}
+  );
+};
 
-export default ChatOutput
+export default ChatOutput;
