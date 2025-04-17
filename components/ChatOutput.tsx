@@ -4,40 +4,64 @@ interface ChatOutputProps {
   answer: string;
 }
 
+interface WikiResult {
+  title: string;
+}
+
 const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
-  const [wikifiedAnswer, setWikifiedAnswer] = useState<string>(answer);
-  const [error, setError] = useState<string>("");
+  const [wikipediaLinks, setWikipediaLinks] = useState<WikiResult[]>([]);
 
   useEffect(() => {
-    (async () => {
+    async function fetchWikipediaLinks() {
       try {
-        const response = await fetch("/api/wikify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ text: answer }),
-        });
+        // Query Wikipedia's search API using the answer text. We request origin=* for CORS.
+        const response = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
+            answer
+          )}&format=json&origin=*`
+        );
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Wikify API error: ${errorText}`);
+          throw new Error(`Wikipedia API error: ${response.statusText}`);
         }
         const data = await response.json();
-        if (data.wikifiedHTML && data.wikifiedHTML !== wikifiedAnswer) {
-          setWikifiedAnswer(data.wikifiedHTML);
-        }
-      } catch (err: any) {
-        console.error("Wikifier error:", err);
-        setError("Unable to process wikification.");
-        setWikifiedAnswer(answer);
+        // Get top 5-6 results.
+        const results = data?.query?.search?.slice(0, 6) || [];
+        setWikipediaLinks(results);
+      } catch (error) {
+        console.error("Error fetching Wikipedia links:", error);
       }
-    })();
+    }
+    if (answer) {
+      fetchWikipediaLinks();
+    }
   }, [answer]);
 
   return (
     <div className="chat-output mt-4">
-      {error && <div className="error-message text-red-500">{error}</div>}
-      <div dangerouslySetInnerHTML={{ __html: wikifiedAnswer }} />
+      {/* Display the main answer */}
+      <div>{answer}</div>
+      {/* Display the top Wikipedia links as clickable URL hashtags */}
+      {wikipediaLinks.length > 0 && (
+        <div className="wikipedia-links mt-4">
+          <strong>Related Wikipedia:</strong>
+          <div>
+            {wikipediaLinks.map((result) => {
+              const linkUrl = `https://en.wikipedia.org/wiki/${result.title.replace(/ /g, '_')}`;
+              return (
+                <a
+                  key={result.title}
+                  href={linkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mr-2"
+                >
+                  #{result.title}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
