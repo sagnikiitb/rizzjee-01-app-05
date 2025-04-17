@@ -1,7 +1,5 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { CHAT_ID } from '@/lib/constants'
 import { Model } from '@/lib/types/models'
 import { Message, useChat } from 'ai/react'
@@ -74,10 +72,11 @@ export function Chat({
       />
       {/*
         Render the ChatOutput component only after the model has completely output the answer.
-        This prevents multiple API calls to /api/wikify during the streaming/loading phase.
+        Passing the complete assistant message along with messages and setMessages so that hashtags
+        (annotations) can be computed and updated in persistent chat history.
       */}
       {!isLoading && lastAssistantMessage && (
-        <ChatOutput answer={lastAssistantMessage.content} />
+        <ChatOutput message={lastAssistantMessage} messages={messages} setMessages={setMessages} />
       )}
       <ChatPanel
         input={input}
