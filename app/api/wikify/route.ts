@@ -29,6 +29,7 @@ export async function POST(request: Request) {
 
     console.log("[WIKIFY API] Using valid WIKIFIER_USER_KEY. Constructing request parameters...");
 
+    // Construct the parameters for Wikifier API GET request (per their docs).
     const params = new URLSearchParams();
     params.append("userKey", userKey);
     params.append("text", text);
@@ -38,10 +39,12 @@ export async function POST(request: Request) {
     params.append("nTopDfValuesToIgnore", "100");
     params.append("nWordsToIgnoreFromList", "200");
 
+    // According to Wikifier docs, the API expects GET syntax.
     const wikifierUrl = `https://www.wikifier.org/annotate-article?${params.toString()}`;
-    console.log(`[WIKIFY API] Fetching annotations from URL: ${wikifierUrl}`);
+    console.log(`[WIKIFY API] Preparing to fetch annotations using GET method with URL: ${wikifierUrl}`);
 
-    const response = await fetch(wikifierUrl);
+    // Explicitly use GET for the external Wikifier API call.
+    const response = await fetch(wikifierUrl, { method: "GET" });
     console.log("[WIKIFY API] Received response from Wikifier:", response.status, response.statusText);
 
     if (!response.ok) {
