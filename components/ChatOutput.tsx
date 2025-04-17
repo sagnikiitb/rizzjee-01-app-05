@@ -1,65 +1,68 @@
 import React, { useEffect, useState } from "react";
 
+interface Annotation {
+  title: string;
+  url: string;
+}
+
 interface ChatOutputProps {
   answer: string;
 }
 
-interface WikiResult {
-  title: string;
-}
-
 const ChatOutput: React.FC<ChatOutputProps> = ({ answer }) => {
-  const [wikipediaLinks, setWikipediaLinks] = useState<WikiResult[]>([]);
+  // This state will hold the top 5-6 annotations (keywords with URLs)
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    async function fetchWikipediaLinks() {
+    (async () => {
       try {
-        // Query Wikipedia's search API using the answer text. We request origin=* for CORS.
-        const response = await fetch(
-          `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(
-            answer
-          )}&format=json&origin=*`
-        );
+        // Call our wikifier API route which is expected to return a JSON object
+        // with an "annotations" array containing { title, url } objects.
+        const response = await fetch("/api/wikify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: answer }),
+        });
         if (!response.ok) {
-          throw new Error(`Wikipedia API error: ${response.statusText}`);
+          const errorText = await response.text();
+          throw new Error(`Wikify API error: ${errorText}`);
         }
         const data = await response.json();
-        // Get top 5-6 results.
-        const results = data?.query?.search?.slice(0, 6) || [];
-        setWikipediaLinks(results);
-      } catch (error) {
-        console.error("Error fetching Wikipedia links:", error);
+        if (data.annotations && Array.isArray(data.annotations)) {
+          // Limit to top 5-6 annotations.
+          setAnnotations(data.annotations.slice(0, 6));
+        } else {
+          // If no annotations provided, clear any previous ones.
+          setAnnotations([]);
+        }
+      } catch (err: any) {
+        console.error("Wikifier error:", err);
+        setError("Unable to retrieve Wikipedia keywords.");
+        setAnnotations([]);
       }
-    }
-    if (answer) {
-      fetchWikipediaLinks();
-    }
+    })();
   }, [answer]);
 
   return (
     <div className="chat-output mt-4">
-      {/* Display the main answer */}
-      <div>{answer}</div>
-      {/* Display the top Wikipedia links as clickable URL hashtags */}
-      {wikipediaLinks.length > 0 && (
-        <div className="wikipedia-links mt-4">
-          <strong>Related Wikipedia:</strong>
-          <div>
-            {wikipediaLinks.map((result) => {
-              const linkUrl = `https://en.wikipedia.org/wiki/${result.title.replace(/ /g, '_')}`;
-              return (
-                <a
-                  key={result.title}
-                  href={linkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mr-2"
-                >
-                  #{result.title}
-                </a>
-              );
-            })}
-          </div>
+      {error ? (
+        <div className="error-message text-red-500">{error}</div>
+      ) : (
+        <div className="wikipedia-keywords">
+          {annotations.map((annotation) => (
+            <a
+              key={annotation.title}
+              href={annotation.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mr-2 text-blue-500 underline"
+            >
+              #{annotation.title}
+            </a>
+          ))}
         </div>
       )}
     </div>
