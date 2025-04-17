@@ -38,19 +38,24 @@ export async function wikifyText(text: string): Promise<string> {
   params.append("nWordsToIgnoreFromList", "200");
 
   const apiUrl = `${endpoint}?${params.toString()}`;
-
   try {
-    const response = await fetch(apiUrl);
+    const response = await fetch('/api/wikify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text })
+    });
+    
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Wikifier API error (status ${response.status}): ${errorText}`);
+      throw new Error(`Internal Wikify API error: ${errorText}`);
     }
     
-    const result = await response.json();
-    // Return the wikified HTML if provided; otherwise return the original text.
-    return result.wikifiedHTML || text;
+    const data = await response.json();
+    return data.wikifiedHTML || text;
   } catch (error) {
-    console.error("Wikifier API request failed:", error);
-    throw new Error("Failed to wikify the provided text. See logs for details.");
+    console.error('Wikifier API request failed:', error);
+    throw new Error('Failed to wikify the provided text. See logs for details.');
   }
 }
