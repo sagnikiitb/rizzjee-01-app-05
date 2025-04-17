@@ -47,9 +47,8 @@ export function Chat({
     sendExtraMessageFields: false // Disable extra message fields
   })
 
-  // Removed useEffect that was calling setMessages every render.
-  // The initialMessages are already set when initializing the chat.
-  
+  // The initialMessages are already set at initialization, so no need for extra useEffect here.
+
   const onQuerySelect = (query: string) => {
     append({
       role: 'user',
@@ -75,7 +74,7 @@ export function Chat({
         isLoading={isLoading}
         chatId={id}
       />
-      {/* Render the wikified output for the last assistant message if available */}
+      {/* Display the main answer along with top relevant Wikipedia links */}
       {lastAssistantMessage && (
         <ChatOutput answer={lastAssistantMessage.content} />
       )}
