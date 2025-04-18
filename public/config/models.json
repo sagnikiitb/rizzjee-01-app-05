@@ -57,12 +57,12 @@
       "toolCallType": "native"
     },
     {
-      "id": "gemini-2.0-flash",
+      "id": "gemini-2.0-flash-001",
       "name": "Gemini 2.0 Flash",
       "provider": "Google Generative AI",
       "providerId": "google",
       "enabled": true,
-      "toolCallType": "manual"
+      "toolCallType": "native"
     },
     {
       "id": "gemini-2.0-flash-thinking-exp-01-21",
@@ -70,8 +70,8 @@
       "provider": "Google Generative AI",
       "providerId": "google",
       "enabled": true,
-      "toolCallType": "manual",
-      "toolCallModel": "gemini-2.0-flash"
+      "toolCallType": "native",
+      "toolCallModel": "gemini-2.0-flash-001"
     },
     {
       "id": "gemini-2.5-pro-exp-03-25",
@@ -79,8 +79,8 @@
       "provider": "Google Generative AI",
       "providerId": "google",
       "enabled": true,
-      "toolCallType": "manual",
-      "toolCallModel": "gemini-2.0-flash"
+      "toolCallType": "native",
+      "toolCallModel": "gemini-2.0-flash-001"
     },
     {
       "id": "accounts/fireworks/models/deepseek-r1",
@@ -97,7 +97,7 @@
       "provider": "DeepSeek",
       "providerId": "deepseek",
       "enabled": true,
-      "toolCallType": "manual",
+      "toolCallType": "native",
       "toolCallModel": "deepseek-chat"
     },
     {
@@ -106,7 +106,7 @@
       "provider": "DeepSeek",
       "providerId": "deepseek",
       "enabled": true,
-      "toolCallType": "manual"
+      "toolCallType": "native"
     },
     {
       "id": "deepseek-r1-distill-llama-70b",
@@ -114,8 +114,8 @@
       "provider": "Groq",
       "providerId": "groq",
       "enabled": true,
-      "toolCallType": "manual",
-      "toolCallModel": "llama-3.1-8b-instant"
+      "toolCallType": "native",
+      "toolCallModel": "gemini-2.0-flash-001"
     },
     {
       "id": "deepseek-r1",
