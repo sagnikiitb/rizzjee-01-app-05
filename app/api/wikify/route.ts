@@ -3,9 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 // Export the config for Edge Runtime
 export const runtime = 'edge';
 
-// Explicitly define allowed methods
-export const allowedMethods = ['POST'];
-
 export async function POST(request: NextRequest) {
   const currentUser = 'sagnikiitb';
   const currentTimestamp = new Date().toISOString();
