@@ -156,6 +156,15 @@ export function RenderMessage({
           onOpenChange={open => onOpenChange(`${messageId}-related`, open)}
         />
       )}
+
+      {/* Add WikiAnnotations after RelatedQuestions */}
+{wikiAnnotations && wikiAnnotations.length > 0 && (
+  <WikiAnnotations
+    annotations={wikiAnnotations as JSONValue[]}
+    isOpen={getIsOpen(`${messageId}-wiki`)}
+    onOpenChange={open => onOpenChange(`${messageId}-wiki`, open)}
+  />
+)}
     </>
   )
 }
