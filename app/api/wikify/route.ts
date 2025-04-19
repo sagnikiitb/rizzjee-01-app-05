@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const params = new URLSearchParams();
     params.append("userKey", userKey);
     params.append("text", text);
-    params.append("lang", "en");
+    params.append("lang", "auto");
     params.append("pageRankSqThreshold", "0.5");
     params.append("applyPageRankSqThreshold", "true");
     params.append("nTopDfValuesToIgnore", "100");
