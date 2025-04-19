@@ -17,6 +17,8 @@ interface HandleStreamFinishParams {
 interface WikifyResponse {
   annotations: WikiAnnotation[]
   error?: string
+  timestamp?: string
+  user?: string
 }
 
 interface WikiAnnotationData {
@@ -34,6 +36,9 @@ export async function handleStreamFinish({
   skipRelatedQuestions = false,
   annotations = []
 }: HandleStreamFinishParams) {
+  const currentUser = 'sagnikiitb';
+  const currentTimestamp = new Date().toISOString();
+
   try {
     const extendedCoreMessages = convertToExtendedCoreMessages(originalMessages)
     let allAnnotations = [...annotations]
@@ -46,31 +51,30 @@ export async function handleStreamFinish({
         const loadingWikiAnnotation: JSONValue = {
           type: 'wiki-annotations',
           data: [],
-          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
+          timestamp: currentTimestamp,
+          user: currentUser
         }
         dataStream.writeMessageAnnotation(loadingWikiAnnotation)
 
-        // Get base URL based on environment
-        const baseUrl = process.env.VERCEL_URL 
-          ? `https://${process.env.VERCEL_URL}`
-          : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        // Use the correct API endpoint based on environment
+        const apiUrl = process.env.VERCEL_URL 
+          ? `https://rizzjee-01-app-05.vercel.app/api/wikify`
+          : 'http://localhost:3000/api/wikify';
 
-        // Construct the full API URL
-        const apiUrl = new URL('/api/wikify', baseUrl).toString()
-
-        // Fetch Wikipedia annotations with proper error handling
+        // Fetch Wikipedia annotations
         const wikifyResponse = await fetch(apiUrl, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.WIKIFY_API_KEY || ''}`,
-            "X-User-ID": "sagnikiitb" // Current user's login
+            "Authorization": `Bearer ${process.env.WIKIFY_API_KEY}`,
+            "X-User-ID": currentUser
           },
           body: JSON.stringify({ 
             text: lastMessage.content,
             maxAnnotations: 5,
             minConfidence: 0.7,
-            timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
+            timestamp: currentTimestamp,
+            user: currentUser
           })
         });
         
@@ -95,29 +99,28 @@ export async function handleStreamFinish({
                 url: annotation.url,
                 confidence: annotation.confidence
               })),
-              timestamp: new Date('2025-04-19T21:56:01Z').toISOString(),
-              userId: 'sagnikiitb'
+              timestamp: currentTimestamp,
+              user: currentUser
             } as JSONValue
           }
           
-          // Add to stream and annotations array
           dataStream.writeMessageAnnotation(wikiAnnotation.content as JSONValue)
           allAnnotations.push(wikiAnnotation)
         } else {
-          // Write empty result with timestamp
           dataStream.writeMessageAnnotation({
             type: 'wiki-annotations',
             data: [],
-            timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
+            timestamp: currentTimestamp,
+            user: currentUser
           })
         }
       } catch (error) {
         console.error('Failed to fetch wiki annotations:', error)
-        // Write error state to stream
         dataStream.writeMessageAnnotation({
           type: 'wiki-annotations',
           error: 'Failed to fetch Wikipedia annotations',
-          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
+          timestamp: currentTimestamp,
+          user: currentUser
         })
       }
     }
@@ -129,7 +132,8 @@ export async function handleStreamFinish({
         const loadingRelatedQuestions: JSONValue = {
           type: 'related-questions',
           data: { items: [] },
-          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
+          timestamp: currentTimestamp,
+          user: currentUser
         }
         dataStream.writeMessageAnnotation(loadingRelatedQuestions)
 
@@ -146,8 +150,8 @@ export async function handleStreamFinish({
             content: {
               type: 'related-questions',
               data: relatedQuestions.object,
-              timestamp: new Date('2025-04-19T21:56:01Z').toISOString(),
-              userId: 'sagnikiitb'
+              timestamp: currentTimestamp,
+              user: currentUser
             } as JSONValue
           }
 
@@ -161,7 +165,8 @@ export async function handleStreamFinish({
         dataStream.writeMessageAnnotation({
           type: 'related-questions',
           error: 'Failed to generate related questions',
-          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
+          timestamp: currentTimestamp,
+          user: currentUser
         })
       }
     }
@@ -179,11 +184,11 @@ export async function handleStreamFinish({
       return
     }
 
-    // Get or create chat with current timestamp and user
+    // Get or create chat
     const savedChat = (await getChat(chatId)) ?? {
       messages: [],
-      createdAt: new Date('2025-04-19T21:56:01Z'),
-      userId: 'sagnikiitb',
+      createdAt: new Date(),
+      userId: currentUser,
       path: `/search/${chatId}`,
       title: originalMessages[0].content,
       id: chatId
@@ -193,8 +198,8 @@ export async function handleStreamFinish({
     await saveChat({
       ...savedChat,
       messages: generatedMessages,
-      updatedAt: new Date('2025-04-19T21:56:01Z'),
-      userId: 'sagnikiitb'
+      updatedAt: new Date(),
+      userId: currentUser
     }).catch(error => {
       console.error('Failed to save chat:', error)
       throw new Error('Failed to save chat history')
