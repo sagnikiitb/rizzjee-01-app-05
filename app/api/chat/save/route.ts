@@ -1,6 +1,12 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
+// Define an interface for the error type
+interface PrismaError {
+  code?: string
+  message?: string
+}
+
 // Simple in-memory request deduplication
 const processingRequests = new Map<string, Promise<any>>()
 
@@ -68,8 +74,9 @@ export async function POST(request: Request) {
         })
 
         return NextResponse.json({ success: true, chat: result })
-      } catch (error: any) {
-        if (error?.code === 'P2021') {  // Table does not exist
+      } catch (error) {
+        const prismaError = error as PrismaError
+        if (prismaError?.code === 'P2021') {  // Table does not exist
           return NextResponse.json({
             error: 'Database not initialized. Please contact administrator.',
             code: 'DB_NOT_INITIALIZED'
@@ -89,12 +96,16 @@ export async function POST(request: Request) {
     processingRequests.delete(requestKey)
 
     return response
-  } catch (error) {
+  } catch (error: unknown) {  // Explicitly type the error as unknown
     console.error('[CHAT SAVE API] Error:', error)
+    
+    // Type guard to check if error is an object with a message property
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+    
     return NextResponse.json(
       { 
         error: 'Failed to save chat',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       },
       { status: 500 }
     )
