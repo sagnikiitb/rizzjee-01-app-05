@@ -135,7 +135,7 @@ const containsMath = (content: string): boolean => {
 
   return patterns.some(pattern => pattern.test(content))
 }
-
+//Scissor start
 export function BotMessage({
   message,
   className
@@ -197,16 +197,47 @@ export function BotMessage({
             )
           },
           a: Citing,
-          math: ({value}) => (
-            <div className="math-block my-2 overflow-x-auto">
-              {value}
-            </div>
-          ),
-          inlineMath: ({value}) => (
-            <span className="math-inline">
-              {value}
-            </span>
-          )
+          // Handle math blocks through the code component
+          code: ({ node, inline, className, children, ...props }) => {
+            const match = /language-(\w+)/.exec(className || '')
+            
+            // Handle math blocks
+            if (match && match[1] === 'math') {
+              return (
+                <div className="math-block my-2 overflow-x-auto">
+                  {String(children).replace(/\n$/, '')}
+                </div>
+              )
+            }
+
+            // Handle inline math (wrapped in single $)
+            if (inline && String(children).startsWith('$') && String(children).endsWith('$')) {
+              const mathContent = String(children).slice(1, -1)
+              return (
+                <span className="math-inline">
+                  {mathContent}
+                </span>
+              )
+            }
+
+            // Default code handling
+            if (inline) {
+              return (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              )
+            }
+
+            return (
+              <CodeBlock
+                key={Math.random()}
+                language={(match && match[1]) || ''}
+                value={String(children).replace(/\n$/, '')}
+                {...props}
+              />
+            )
+          }
         }}
       >
         {processedContent}
@@ -214,7 +245,7 @@ export function BotMessage({
     </LaTeXErrorBoundary>
   )
 }
-
+// Scissor end
 // Error boundary component (as defined in previous version)
 const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   try {
