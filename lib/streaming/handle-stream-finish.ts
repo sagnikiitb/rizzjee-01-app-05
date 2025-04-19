@@ -26,6 +26,36 @@ export async function handleStreamFinish({
   try {
     const extendedCoreMessages = convertToExtendedCoreMessages(originalMessages)
     let allAnnotations = [...annotations]
+    
+    // Get Wikipedia annotations
+    const lastMessage = responseMessages[responseMessages.length - 1]
+    if (lastMessage?.content) {
+      try {
+        const wikifyResponse = await fetch("/api/wikify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: lastMessage.content })
+        });
+        
+        if (wikifyResponse.ok) {
+          const wikifyData = await wikifyResponse.json();
+          // Create Wiki annotation
+          const wikiAnnotation: ExtendedCoreMessage = {
+            role: 'data',
+            content: {
+              type: 'wiki-annotations',
+              data: wikifyData.annotations
+            } as JSONValue
+          }
+          
+          // Add to stream and annotations
+          dataStream.writeMessageAnnotation(wikiAnnotation.content as JSONValue)
+          allAnnotations.push(wikiAnnotation)
+        }
+      } catch (error) {
+        console.error('Failed to fetch wiki annotations:', error)
+      }
+    }
 
     if (!skipRelatedQuestions) {
       // Notify related questions loading
