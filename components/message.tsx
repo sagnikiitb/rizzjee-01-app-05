@@ -6,9 +6,11 @@ import rehypeExternalLinks from 'rehype-external-links'
 import rehypeKatex from 'rehype-katex'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
+import { Components } from 'react-markdown'
 import { Citing } from './custom-link'
 import { CodeBlock } from './ui/codeblock'
 import { MemoizedReactMarkdown } from './ui/markdown'
+import { ReactNode } from 'react'
 
 // Common mathematical patterns in plaintext
 const MATH_PATTERNS = {
@@ -136,6 +138,13 @@ const containsMath = (content: string): boolean => {
   return patterns.some(pattern => pattern.test(content))
 }
 //Scissor start
+type CodeProps = Components['code'] & {
+  node?: any
+  inline?: boolean
+  className?: string
+  children?: React.ReactNode
+}
+
 export function BotMessage({
   message,
   className
@@ -145,6 +154,62 @@ export function BotMessage({
 }) {
   const hasMath = containsMath(message || '')
   const processedContent = hasMath ? preprocessMath(message || '') : message
+
+  const CodeComponent: React.FC<CodeProps> = ({ node, inline, className, children, ...props }) => {
+    if (children && Array.isArray(children) && children.length > 0) {
+      if (children[0] === '▍') {
+        return (
+          <span className="mt-1 cursor-default animate-pulse">▍</span>
+        )
+      }
+      if (typeof children[0] === 'string') {
+        children[0] = children[0].replace('`▍`', '▍')
+      }
+    }
+
+    const match = /language-(\w+)/.exec(className || '')
+    
+    // Handle math blocks
+    if (match && match[1] === 'math') {
+      return (
+        <div className="math-block my-2 overflow-x-auto">
+          {String(children).replace(/\n$/, '')}
+        </div>
+      )
+    }
+
+    // Handle inline math
+    if (inline && 
+        typeof children === 'string' && 
+        children.startsWith('$') && 
+        children.endsWith('$')) {
+      const mathContent = children.slice(1, -1)
+      return (
+        <span className="math-inline">
+          {mathContent}
+        </span>
+      )
+    }
+
+    // Default inline code handling
+    if (inline) {
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    }
+
+    // Default code block handling
+    return (
+      <CodeBlock
+        key={Math.random()}
+        language={(match && match[1]) || ''}
+        value={String(children).replace(/\n$/, '')}
+        {...props}
+      />
+    )
+  }
 
   return (
     <LaTeXErrorBoundary>
@@ -167,77 +232,8 @@ export function BotMessage({
           className
         )}
         components={{
-          code({ node, inline, className, children, ...props }) {
-            if (children.length) {
-              if (children[0] == '▍') {
-                return (
-                  <span className="mt-1 cursor-default animate-pulse">▍</span>
-                )
-              }
-              children[0] = (children[0] as string).replace('`▍`', '▍')
-            }
-
-            const match = /language-(\w+)/.exec(className || '')
-
-            if (inline) {
-              return (
-                <code className={className} {...props}>
-                  {children}
-                </code>
-              )
-            }
-
-            return (
-              <CodeBlock
-                key={Math.random()}
-                language={(match && match[1]) || ''}
-                value={String(children).replace(/\n$/, '')}
-                {...props}
-              />
-            )
-          },
-          a: Citing,
-          // Handle math blocks through the code component
-          code: ({ node, inline, className, children, ...props }) => {
-            const match = /language-(\w+)/.exec(className || '')
-            
-            // Handle math blocks
-            if (match && match[1] === 'math') {
-              return (
-                <div className="math-block my-2 overflow-x-auto">
-                  {String(children).replace(/\n$/, '')}
-                </div>
-              )
-            }
-
-            // Handle inline math (wrapped in single $)
-            if (inline && String(children).startsWith('$') && String(children).endsWith('$')) {
-              const mathContent = String(children).slice(1, -1)
-              return (
-                <span className="math-inline">
-                  {mathContent}
-                </span>
-              )
-            }
-
-            // Default code handling
-            if (inline) {
-              return (
-                <code className={className} {...props}>
-                  {children}
-                </code>
-              )
-            }
-
-            return (
-              <CodeBlock
-                key={Math.random()}
-                language={(match && match[1]) || ''}
-                value={String(children).replace(/\n$/, '')}
-                {...props}
-              />
-            )
-          }
+          code: CodeComponent,
+          a: Citing
         }}
       >
         {processedContent}
@@ -245,8 +241,8 @@ export function BotMessage({
     </LaTeXErrorBoundary>
   )
 }
-// Scissor end
-// Error boundary component (as defined in previous version)
+
+// Error boundary component
 const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   try {
     return <>{children}</>
@@ -259,3 +255,4 @@ const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
     )
   }
 }
+//Scissor end
