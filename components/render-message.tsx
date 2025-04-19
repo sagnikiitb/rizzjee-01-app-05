@@ -1,4 +1,5 @@
 import { JSONValue, Message, ToolInvocation } from 'ai'
+import { WikipediaReferences } from './wikipedia-references'
 import { useMemo } from 'react'
 import { AnswerSection } from './answer-section'
 import { ReasoningSection } from './reasoning-section'
@@ -24,6 +25,13 @@ export function RenderMessage({
   onQuerySelect,
   chatId
 }: RenderMessageProps) {
+  const wikipediaReferences = useMemo(
+  () =>
+    message.annotations?.filter(
+      annotation => (annotation as any)?.type === 'wikipedia-references'
+    ),
+  [message.annotations]
+)
   const relatedQuestions = useMemo(
     () =>
       message.annotations?.filter(
