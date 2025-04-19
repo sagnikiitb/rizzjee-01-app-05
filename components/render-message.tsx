@@ -157,9 +157,12 @@ export function RenderMessage({
             return null
         }
       })}
-      {reasoningTime > 0 && (
+      {reasoningTime > 0 && reasoningAnnotation?.data && (
         <ReasoningSection
-          reasoning={reasoningAnnotation?.data}
+          content={{
+            reasoning: reasoningAnnotation.data.reasoning || '',
+            time: reasoningTime
+          }}
           isOpen={getIsOpen(`${messageId}-reasoning`)}
           onOpenChange={open => onOpenChange(`${messageId}-reasoning`, open)}
         />
