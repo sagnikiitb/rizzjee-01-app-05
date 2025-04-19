@@ -1,12 +1,11 @@
 import { JSONValue, Message, ToolInvocation } from 'ai'
-import { WikipediaReferences } from './wikipedia-references'
 import { useMemo } from 'react'
 import { AnswerSection } from './answer-section'
 import { ReasoningSection } from './reasoning-section'
 import RelatedQuestions from './related-questions'
 import { ToolSection } from './tool-section'
 import { UserMessage } from './user-message'
-import { WikiAnnotations } from './wiki-annotations'
+import WikipediaReferences from './wikipedia-references'
 
 interface RenderMessageProps {
   message: Message
@@ -26,12 +25,13 @@ export function RenderMessage({
   chatId
 }: RenderMessageProps) {
   const wikipediaReferences = useMemo(
-  () =>
-    message.annotations?.filter(
-      annotation => (annotation as any)?.type === 'wikipedia-references'
-    ),
-  [message.annotations]
-)
+    () =>
+      message.annotations?.filter(
+        annotation => (annotation as any)?.type === 'wikipedia-references'
+      ),
+    [message.annotations]
+  )
+
   const relatedQuestions = useMemo(
     () =>
       message.annotations?.filter(
@@ -39,13 +39,6 @@ export function RenderMessage({
       ),
     [message.annotations]
   )
-  const wikiAnnotations = useMemo(
-  () =>
-    message.annotations?.filter(
-      annotation => (annotation as any)?.type === 'wiki-annotations'
-    ),
-  [message.annotations]
-)
 
   // Render for manual tool call
   const toolData = useMemo(() => {
@@ -145,6 +138,7 @@ export function RenderMessage({
                 onOpenChange={open => onOpenChange(messageId, open)}
                 chatId={chatId}
                 showActions={isLastPart}
+                reasoning={reasoningTime > 0 && isLastPart}
               />
             )
           case 'reasoning':
@@ -155,8 +149,8 @@ export function RenderMessage({
                   reasoning: part.reasoning,
                   time: reasoningTime
                 }}
-                isOpen={getIsOpen(messageId)}
-                onOpenChange={open => onOpenChange(messageId, open)}
+                isOpen={getIsOpen(`${messageId}-reasoning-${index}`)}
+                onOpenChange={open => onOpenChange(`${messageId}-reasoning-${index}`, open)}
               />
             )
           // Add other part types as needed
@@ -164,6 +158,20 @@ export function RenderMessage({
             return null
         }
       })}
+      {reasoningTime > 0 && (
+        <ReasoningSection
+          reasoning={reasoningAnnotation?.data}
+          isOpen={getIsOpen(`${messageId}-reasoning`)}
+          onOpenChange={open => onOpenChange(`${messageId}-reasoning`, open)}
+        />
+      )}
+      {wikipediaReferences?.length > 0 && (
+        <WikipediaReferences
+          annotations={wikipediaReferences}
+          isOpen={getIsOpen(`${messageId}-wikipedia`)}
+          onOpenChange={open => onOpenChange(`${messageId}-wikipedia`, open)}
+        />
+      )}
       {relatedQuestions && relatedQuestions.length > 0 && (
         <RelatedQuestions
           annotations={relatedQuestions as JSONValue[]}
@@ -172,15 +180,6 @@ export function RenderMessage({
           onOpenChange={open => onOpenChange(`${messageId}-related`, open)}
         />
       )}
-
-      {/* Add WikiAnnotations after RelatedQuestions */}
-{wikiAnnotations && wikiAnnotations.length > 0 && (
-  <WikiAnnotations
-    annotations={wikiAnnotations as JSONValue[]}
-    isOpen={getIsOpen(`${messageId}-wiki`)}
-    onOpenChange={open => onOpenChange(`${messageId}-wiki`, open)}
-  />
-)}
     </>
   )
 }
