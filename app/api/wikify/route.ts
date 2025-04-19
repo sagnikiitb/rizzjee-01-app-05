@@ -18,18 +18,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check authorization header
-    const authHeader = request.headers.get('Authorization');
-    const expectedApiKey = process.env.WIKIFY_API_KEY;
-    
-    if (!authHeader || !expectedApiKey || !authHeader.startsWith('Bearer ') || authHeader.slice(7) !== expectedApiKey) {
-      console.error(`[WIKIFY API] Internal WIKIFY_API Authorization failed for user ${currentUser}`);
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
     // Parse JSON payload from request
     const reqBody = await request.json();
     console.log(`[WIKIFY API] Request payload received from ${currentUser}`);
