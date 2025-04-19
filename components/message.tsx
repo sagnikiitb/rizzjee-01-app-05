@@ -10,58 +10,129 @@ import { Citing } from './custom-link'
 import { CodeBlock } from './ui/codeblock'
 import { MemoizedReactMarkdown } from './ui/markdown'
 
-// Add error boundary for LaTeX rendering
-const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
-  try {
-    return <>{children}</>
-  } catch (error) {
-    console.error('LaTeX Rendering Error:', error)
-    return (
-      <div className="latex-error p-2 text-sm text-red-500 bg-red-50 rounded">
-        <p>Failed to render LaTeX expression</p>
-      </div>
-    )
+// Common mathematical patterns in plaintext
+const MATH_PATTERNS = {
+  fractions: /(\d+)\/(\d+)/g,
+  exponents: /(\w+)\^(\d+|\{\w+\})/g,
+  squareRoot: /sqrt\(([^)]+)\)/g,
+  subscripts: /(\w+)_(\d+|\{\w+\})/g,
+  plusMinus: /\+\-/g,
+  multiplicationDot: /(\d+|\})\s*\*\s*(\d+|\{)/g,
+  greekLetters: {
+    alpha: /\balpha\b/g,
+    beta: /\bbeta\b/g,
+    gamma: /\bgamma\b/g,
+    delta: /\bdelta\b/g,
+    theta: /\btheta\b/g,
+    pi: /\bpi\b/g,
+    sigma: /\bsigma\b/g,
+    omega: /\bomega\b/g,
+    // Add more Greek letters as needed
   }
 }
 
-// Enhanced LaTeX preprocessing
-const preprocessLaTeX = (content: string): string => {
-  // Handle block equations
-  let processedContent = content.replace(
-    /\\\[([\s\S]*?)\\\]/g,
-    (_, equation) => `\n$$${equation.trim()}$$\n`
+// Convert plaintext math to LaTeX
+const convertPlainTextToLaTeX = (text: string): string => {
+  // Handle fractions
+  text = text.replace(MATH_PATTERNS.fractions, '\\frac{$1}{$2}')
+
+  // Handle exponents
+  text = text.replace(MATH_PATTERNS.exponents, '{$1}^{$2}')
+
+  // Handle square roots
+  text = text.replace(MATH_PATTERNS.squareRoot, '\\sqrt{$1}')
+
+  // Handle subscripts
+  text = text.replace(MATH_PATTERNS.subscripts, '{$1}_{$2}')
+
+  // Handle plus-minus
+  text = text.replace(MATH_PATTERNS.plusMinus, '\\pm ')
+
+  // Handle multiplication dot
+  text = text.replace(MATH_PATTERNS.multiplicationDot, '$1 \\cdot $2')
+
+  // Handle Greek letters
+  Object.entries(MATH_PATTERNS.greekLetters).forEach(([letter, pattern]) => {
+    text = text.replace(pattern, `\\${letter}`)
+  })
+
+  return text
+}
+
+// Convert Markdown-style math to LaTeX
+const convertMarkdownToLaTeX = (text: string): string => {
+  // Handle GitHub-flavored Markdown math blocks with ```math
+  text = text.replace(
+    /```math\s*([\s\S]*?)\s*```/g,
+    (_, math) => `\n\\[\n${math.trim()}\n\\]\n`
   )
-  
-  // Handle inline equations
-  processedContent = processedContent.replace(
-    /\\\(([\s\S]*?)\\\)/g,
-    (_, equation) => `$${equation.trim()}$`
+
+  // Handle inline math with single backticks and dollar signs
+  text = text.replace(
+    /`\$([^`]+)\$`/g,
+    (_, math) => `\\(${math.trim()}\\)`
   )
-  
-  // Handle align environments
+
+  // Handle multi-line math blocks with triple backticks
+  text = text.replace(
+    /```\n\$\$([\s\S]*?)\$\$\n```/g,
+    (_, math) => `\n\\[\n${math.trim()}\n\\]\n`
+  )
+
+  return text
+}
+
+// Enhanced preprocessing function
+const preprocessMath = (content: string): string => {
+  if (!content) return ''
+
+  // First handle Markdown-style math
+  let processedContent = convertMarkdownToLaTeX(content)
+
+  // Look for potential plaintext math expressions
+  const plainTextMathRegex = /([^$\\\n])([\d\w]+[\/\^_\*][\d\w]+|sqrt\([^)]+\)|\b(alpha|beta|gamma|delta|theta|pi|sigma|omega)\b)/g
+  processedContent = processedContent.replace(plainTextMathRegex, (match, pre, expr) => {
+    // Don't convert if it's already part of a LaTeX expression
+    if (pre.endsWith('\\') || pre.endsWith('$')) return match
+    return `${pre}\\(${convertPlainTextToLaTeX(expr)}\\)`
+  })
+
+  // Handle existing LaTeX expressions
   processedContent = processedContent
+    // Handle display math
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, equation) => `\n$$${equation.trim()}$$\n`)
+    // Handle inline math
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_, equation) => `$${equation.trim()}$`)
+    // Handle align environments
     .replace(/\\begin{align\*?}/g, '\\begin{aligned}')
     .replace(/\\end{align\*?}/g, '\\end{aligned}')
-    
-  // Normalize spacing around equations
-  processedContent = processedContent
+    // Normalize spacing
     .replace(/([^$])\$\$/g, '$1\n$$')
     .replace(/\$\$([^$])/g, '$$\n$1')
     .replace(/([^$])\$([^$])/g, '$1 $ $2')
-    
+
   return processedContent
 }
 
-// Enhanced LaTeX detection
-const containsLaTeX = (content: string): boolean => {
+// Enhanced math detection
+const containsMath = (content: string): boolean => {
+  if (!content) return false
+
   const patterns = [
-    /\\\[([\s\S]*?)\\\]/, // Display math
-    /\\\(([\s\S]*?)\\\)/, // Inline math
-    /\$\$([\s\S]*?)\$\$/, // Display math with $$
-    /\$[^$\n]+\$/,        // Inline math with single $
-    /\\begin\{[^}]+\}/    // Environment blocks
+    /\\\[([\s\S]*?)\\\]/,          // Display math
+    /\\\(([\s\S]*?)\\\)/,          // Inline math
+    /\$\$([\s\S]*?)\$\$/,          // Display math with $$
+    /\$[^$\n]+\$/,                 // Inline math with single $
+    /\\begin\{[^}]+\}/,            // Environment blocks
+    /```math/,                      // Markdown math blocks
+    /`\$[^`]+\$`/,                 // Markdown inline math
+    /(\d+)\/(\d+)/,                // Fractions
+    /(\w+)\^(\d+|\{\w+\})/,        // Exponents
+    /sqrt\([^)]+\)/,               // Square roots
+    /(\w+)_(\d+|\{\w+\})/,         // Subscripts
+    /\b(alpha|beta|gamma|delta|theta|pi|sigma|omega)\b/ // Greek letters
   ]
-  
+
   return patterns.some(pattern => pattern.test(content))
 }
 
@@ -72,8 +143,8 @@ export function BotMessage({
   message: string
   className?: string
 }) {
-  const hasLaTeX = containsLaTeX(message || '')
-  const processedContent = hasLaTeX ? preprocessLaTeX(message || '') : message
+  const hasMath = containsMath(message || '')
+  const processedContent = hasMath ? preprocessMath(message || '') : message
 
   return (
     <LaTeXErrorBoundary>
@@ -92,7 +163,7 @@ export function BotMessage({
         remarkPlugins={[remarkGfm, remarkMath]}
         className={cn(
           'prose-sm prose-neutral prose-a:text-accent-foreground/50',
-          'math-content', // Add this class for styling
+          'math-content',
           className
         )}
         components={{
@@ -126,7 +197,6 @@ export function BotMessage({
             )
           },
           a: Citing,
-          // Add custom components for math blocks
           math: ({value}) => (
             <div className="math-block my-2 overflow-x-auto">
               {value}
@@ -143,4 +213,18 @@ export function BotMessage({
       </MemoizedReactMarkdown>
     </LaTeXErrorBoundary>
   )
+}
+
+// Error boundary component (as defined in previous version)
+const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+  try {
+    return <>{children}</>
+  } catch (error) {
+    console.error('LaTeX Rendering Error:', error)
+    return (
+      <div className="latex-error p-2 text-sm text-red-500 bg-red-50 rounded">
+        <p>Failed to render LaTeX expression</p>
+      </div>
+    )
+  }
 }
