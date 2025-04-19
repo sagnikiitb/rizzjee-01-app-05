@@ -3,6 +3,8 @@ import { getChat } from '@/lib/actions/chat'
 import { getModels } from '@/lib/config/models'
 import { convertToUIMessages } from '@/lib/utils'
 import { notFound, redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+
 
 export const maxDuration = 60
 
@@ -36,4 +38,34 @@ export default async function SearchPage(props: {
 
   const models = await getModels()
   return <Chat id={id} savedMessages={messages} models={models} />
+}
+
+
+async function loadSavedMessages(chatId: string) {
+  try {
+    const response = await fetch(`${process.env.VERCEL_URL}/api/chat/load?chatId=${chatId}`, {
+      cache: 'no-store'
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to load messages')
+    }
+
+    const data = await response.json()
+    return data.messages
+  } catch (error) {
+    console.error('Error loading messages:', error)
+    return []
+  }
+}
+
+export default async function ChatPage({ params }: { params: { id: string } }) {
+  const savedMessages = await loadSavedMessages(params.id)
+
+  return (
+    <Chat
+      id={params.id}
+      savedMessages={savedMessages}
+    />
+  )
 }
