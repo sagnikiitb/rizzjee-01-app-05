@@ -5,6 +5,7 @@ import { ReasoningSection } from './reasoning-section'
 import RelatedQuestions from './related-questions'
 import { ToolSection } from './tool-section'
 import { UserMessage } from './user-message'
+import { WikiAnnotations } from './wiki-annotations'
 
 interface RenderMessageProps {
   message: Message
@@ -30,6 +31,13 @@ export function RenderMessage({
       ),
     [message.annotations]
   )
+  const wikiAnnotations = useMemo(
+  () =>
+    message.annotations?.filter(
+      annotation => (annotation as any)?.type === 'wiki-annotations'
+    ),
+  [message.annotations]
+)
 
   // Render for manual tool call
   const toolData = useMemo(() => {
