@@ -114,17 +114,25 @@ export async function POST(request: NextRequest) {
 
     // Return the processed annotations
     return NextResponse.json({
-      annotations: limitedAnnotations,
-      timestamp: currentTimestamp,
-      user: currentUser
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      }
-    });
+  type: 'wikipedia-references',
+  data: {
+    annotations: limitedAnnotations.map(annotation => ({
+      title: annotation.title,
+      url: annotation.url,
+      confidence: annotation.confidence
+    }))
+  },
+  timestamp: currentTimestamp,
+  user: currentUser
+}, {
+  headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  }
+});
+
 
   } catch (error) {
     console.error(`[WIKIFY API] Internal server error for user ${currentUser}:`, error);
