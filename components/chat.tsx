@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
 import ChatOutput from './ChatOutput'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 
 export function Chat({
   id,
@@ -20,6 +20,27 @@ export function Chat({
   query?: string
   models?: Model[]
 }) {
+  const dbInitialized = useRef(false)
+    // Initialize database on first load
+  useEffect(() => {
+    const initDatabase = async () => {
+      if (dbInitialized.current) return
+      
+      try {
+        const response = await fetch('/api/init-db')
+        if (!response.ok) {
+          throw new Error('Failed to initialize database')
+        }
+        dbInitialized.current = true
+      } catch (error) {
+        console.error('Database initialization failed:', error)
+        toast.error('Failed to initialize chat system')
+      }
+    }
+
+    initDatabase()
+  }, [])
+
   const {
     messages,
     input,
@@ -58,9 +79,15 @@ export function Chat({
           messages: messagesToSave
         })
       })
-
       if (!response.ok) {
-        throw new Error('Failed to save messages')
+        const data = await response.json()
+        if (data.code === 'DB_NOT_INITIALIZED') {
+          // Try to initialize the database
+          await fetch('/api/init-db')
+          // Retry the save once
+          return await saveMessages(messagesToSave)
+        }
+        throw new Error(data.error || 'Failed to save messages')
       }
     } catch (error) {
       console.error('Error saving messages:', error)
