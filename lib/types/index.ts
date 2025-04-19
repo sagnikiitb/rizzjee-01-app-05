@@ -6,6 +6,17 @@ export type SearchResults = {
   number_of_results?: number
   query: string
 }
+// Add WikiAnnotation interface
+export interface WikiAnnotation {
+  title: string
+  url: string
+}
+
+// Add WikiAnnotationResponse interface for the API response
+export interface WikiAnnotationResponse {
+  annotations: WikiAnnotation[]
+}
+
 
 // If enabled the include_images_description is true, the images will be an array of { url: string, description: string }
 // Otherwise, the images will be an array of strings
@@ -81,6 +92,7 @@ export type AIMessage = {
   type?:
     | 'answer'
     | 'related'
+    | 'wiki'
     | 'skip'
     | 'inquiry'
     | 'input'
@@ -89,6 +101,13 @@ export type AIMessage = {
     | 'followup'
     | 'end'
 }
+
+// Add WikiAnnotationContent interface for the annotation content structure
+export interface WikiAnnotationContent {
+  type: 'wiki-annotations'
+  data: WikiAnnotation[]
+}
+
 
 export interface SearXNGResult {
   title: string
