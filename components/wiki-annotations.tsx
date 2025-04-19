@@ -4,6 +4,7 @@ import { JSONValue } from 'ai'
 import { BookText } from 'lucide-react'
 import React from 'react'
 import { CollapsibleMessage } from './collapsible-message'
+import { WikiAnnotation, WikiAnnotationContent } from '@/lib/types' // Import the types we defined
 
 export interface WikiAnnotationsProps {
   annotations: JSONValue[]
@@ -11,23 +12,47 @@ export interface WikiAnnotationsProps {
   onOpenChange: (open: boolean) => void
 }
 
-interface WikiAnnotation {
-  title: string
-  url: string
-}
-
 export const WikiAnnotations: React.FC<WikiAnnotationsProps> = ({
   annotations,
   isOpen,
   onOpenChange
 }) => {
-  if (!annotations) {
+  if (!annotations || annotations.length === 0) {
     return null
   }
 
-  const lastWikiAnnotation = annotations[annotations.length - 1] as {
-    type: 'wiki-annotations'
-    data: WikiAnnotation[]
+  // Safely type check and cast the annotation
+  const lastAnnotation = annotations[annotations.length - 1]
+  if (!lastAnnotation || typeof lastAnnotation !== 'object') {
+    return null
+  }
+
+  // Type guard function to check if the annotation is a WikiAnnotationContent
+  const isWikiAnnotation = (value: unknown): value is WikiAnnotationContent => {
+    if (!value || typeof value !== 'object') return false
+    const annotation = value as any
+    return (
+      annotation.type === 'wiki-annotations' &&
+      Array.isArray(annotation.data) &&
+      annotation.data.every(
+        (item: any) =>
+          item &&
+          typeof item === 'object' &&
+          typeof item.title === 'string' &&
+          typeof item.url === 'string'
+      )
+    )
+  }
+
+  // Type check the annotation
+  if (!isWikiAnnotation(lastAnnotation)) {
+    return null
+  }
+
+  const wikiAnnotations = lastAnnotation.data
+
+  if (wikiAnnotations.length === 0) {
+    return null
   }
 
   const header = (
@@ -36,11 +61,6 @@ export const WikiAnnotations: React.FC<WikiAnnotationsProps> = ({
       <div>Wikipedia References</div>
     </div>
   )
-
-  const wikiAnnotations = lastWikiAnnotation?.data
-  if (!wikiAnnotations || wikiAnnotations.length === 0) {
-    return null
-  }
 
   return (
     <CollapsibleMessage
