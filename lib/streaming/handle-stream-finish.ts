@@ -19,6 +19,12 @@ interface WikifyResponse {
   error?: string
 }
 
+interface WikiAnnotationData {
+  title: string
+  url: string
+  confidence?: number
+}
+
 export async function handleStreamFinish({
   responseMessages,
   originalMessages,
@@ -32,28 +38,39 @@ export async function handleStreamFinish({
     const extendedCoreMessages = convertToExtendedCoreMessages(originalMessages)
     let allAnnotations = [...annotations]
     
-    // Handle Wikipedia annotations first
+    // Handle Wikipedia annotations
     const lastMessage = responseMessages[responseMessages.length - 1]
     if (lastMessage?.content) {
       try {
-        // Notify wiki annotations loading
+        // Notify wiki annotations loading state
         const loadingWikiAnnotation: JSONValue = {
           type: 'wiki-annotations',
-          data: []
+          data: [],
+          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
         }
         dataStream.writeMessageAnnotation(loadingWikiAnnotation)
 
-        // Fetch Wikipedia annotations
-        const wikifyResponse = await fetch("/api/wikify", {
+        // Get base URL based on environment
+        const baseUrl = process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}`
+          : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
+        // Construct the full API URL
+        const apiUrl = new URL('/api/wikify', baseUrl).toString()
+
+        // Fetch Wikipedia annotations with proper error handling
+        const wikifyResponse = await fetch(apiUrl, {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.WIKIFY_API_KEY || ''}`
+            "Authorization": `Bearer ${process.env.WIKIFY_API_KEY || ''}`,
+            "X-User-ID": "sagnikiitb" // Current user's login
           },
           body: JSON.stringify({ 
             text: lastMessage.content,
-            maxAnnotations: 5, // Limit number of annotations
-            minConfidence: 0.7 // Only get high-confidence matches
+            maxAnnotations: 5,
+            minConfidence: 0.7,
+            timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
           })
         });
         
@@ -73,21 +90,25 @@ export async function handleStreamFinish({
             role: 'data',
             content: {
               type: 'wiki-annotations',
-              data: wikifyData.annotations.map(annotation => ({
+              data: wikifyData.annotations.map((annotation: WikiAnnotationData) => ({
                 title: annotation.title,
-                url: annotation.url
-              }))
+                url: annotation.url,
+                confidence: annotation.confidence
+              })),
+              timestamp: new Date('2025-04-19T21:56:01Z').toISOString(),
+              userId: 'sagnikiitb'
             } as JSONValue
           }
           
-          // Add to stream and save in annotations array
+          // Add to stream and annotations array
           dataStream.writeMessageAnnotation(wikiAnnotation.content as JSONValue)
           allAnnotations.push(wikiAnnotation)
         } else {
-          // If no annotations found, write empty result
+          // Write empty result with timestamp
           dataStream.writeMessageAnnotation({
             type: 'wiki-annotations',
-            data: []
+            data: [],
+            timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
           })
         }
       } catch (error) {
@@ -95,7 +116,8 @@ export async function handleStreamFinish({
         // Write error state to stream
         dataStream.writeMessageAnnotation({
           type: 'wiki-annotations',
-          error: 'Failed to fetch Wikipedia annotations'
+          error: 'Failed to fetch Wikipedia annotations',
+          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
         })
       }
     }
@@ -106,7 +128,8 @@ export async function handleStreamFinish({
         // Notify related questions loading
         const loadingRelatedQuestions: JSONValue = {
           type: 'related-questions',
-          data: { items: [] }
+          data: { items: [] },
+          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
         }
         dataStream.writeMessageAnnotation(loadingRelatedQuestions)
 
@@ -122,7 +145,9 @@ export async function handleStreamFinish({
             role: 'data',
             content: {
               type: 'related-questions',
-              data: relatedQuestions.object
+              data: relatedQuestions.object,
+              timestamp: new Date('2025-04-19T21:56:01Z').toISOString(),
+              userId: 'sagnikiitb'
             } as JSONValue
           }
 
@@ -135,7 +160,8 @@ export async function handleStreamFinish({
         console.error('Failed to generate related questions:', error)
         dataStream.writeMessageAnnotation({
           type: 'related-questions',
-          error: 'Failed to generate related questions'
+          error: 'Failed to generate related questions',
+          timestamp: new Date('2025-04-19T21:56:01Z').toISOString()
         })
       }
     }
@@ -153,21 +179,22 @@ export async function handleStreamFinish({
       return
     }
 
-    // Get or create chat
+    // Get or create chat with current timestamp and user
     const savedChat = (await getChat(chatId)) ?? {
       messages: [],
-      createdAt: new Date(),
-      userId: 'anonymous',
+      createdAt: new Date('2025-04-19T21:56:01Z'),
+      userId: 'sagnikiitb',
       path: `/search/${chatId}`,
       title: originalMessages[0].content,
       id: chatId
     }
 
-    // Save chat with all annotations
+    // Save chat with complete response and annotations
     await saveChat({
       ...savedChat,
       messages: generatedMessages,
-      updatedAt: new Date('2025-04-19T21:42:29Z') // Using the current timestamp
+      updatedAt: new Date('2025-04-19T21:56:01Z'),
+      userId: 'sagnikiitb'
     }).catch(error => {
       console.error('Failed to save chat:', error)
       throw new Error('Failed to save chat history')
@@ -175,7 +202,6 @@ export async function handleStreamFinish({
 
   } catch (error) {
     console.error('Error in handleStreamFinish:', error)
-    // Ensure the error is properly propagated
     if (error instanceof Error) {
       throw error
     }
