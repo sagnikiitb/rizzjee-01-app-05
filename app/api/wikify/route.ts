@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Export the config for Edge Runtime
-export const runtime = 'edge';
+//export const runtime = 'edge';
+// Change runtime config to serverless
+export const config = {
+  runtime: 'nodejs',    // Changed from 'edge' to 'nodejs'
+  maxDuration: 60      // Utilize Pro plan's 60-second limit
+}
+
 
 export async function POST(request: NextRequest) {
   const currentUser = 'sagnikiitb';
