@@ -28,7 +28,7 @@ export function RenderMessage({
     () =>
       message.annotations?.filter(
         annotation => (annotation as any)?.type === 'wikipedia-references'
-      ),
+      ) || [],
     [message.annotations]
   )
 
@@ -167,7 +167,7 @@ export function RenderMessage({
           onOpenChange={open => onOpenChange(`${messageId}-reasoning`, open)}
         />
       )}
-      {wikipediaReferences?.length > 0 && (
+      {wikipediaReferences.length > 0 && (
         <WikipediaReferences
           annotations={wikipediaReferences}
           isOpen={getIsOpen(`${messageId}-wikipedia`)}
