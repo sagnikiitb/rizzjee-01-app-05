@@ -1,10 +1,14 @@
 'use client'
 
+import { CHAT_ID } from '@/lib/constants'
+import { WikiAnnotation, WikiAnnotationContent } from '@/lib/types'
 import { JSONValue } from 'ai'
-import { BookText } from 'lucide-react'
+import { useChat } from 'ai/react'
+import { Book, ArrowUpRight } from 'lucide-react'
 import React from 'react'
 import { CollapsibleMessage } from './collapsible-message'
-import { WikiAnnotation, WikiAnnotationContent } from '@/lib/types' // Import the types we defined
+import { Button } from './ui/button'
+import { Skeleton } from './ui/skeleton'
 
 export interface WikiAnnotationsProps {
   annotations: JSONValue[]
@@ -12,55 +16,55 @@ export interface WikiAnnotationsProps {
   onOpenChange: (open: boolean) => void
 }
 
+interface WikiAnnotationsData extends Record<string, JSONValue> {
+  type: 'wiki-annotations'
+  data: WikiAnnotation[]
+}
+
 export const WikiAnnotations: React.FC<WikiAnnotationsProps> = ({
   annotations,
   isOpen,
   onOpenChange
 }) => {
+  const { isLoading } = useChat({
+    id: CHAT_ID
+  })
+
   if (!annotations || annotations.length === 0) {
     return null
   }
 
-  // Safely type check and cast the annotation
-  const lastAnnotation = annotations[annotations.length - 1]
-  if (!lastAnnotation || typeof lastAnnotation !== 'object') {
-    return null
-  }
-
-  // Type guard function to check if the annotation is a WikiAnnotationContent
-  const isWikiAnnotation = (value: unknown): value is WikiAnnotationContent => {
-    if (!value || typeof value !== 'object') return false
-    const annotation = value as any
-    return (
-      annotation.type === 'wiki-annotations' &&
-      Array.isArray(annotation.data) &&
-      annotation.data.every(
-        (item: any) =>
-          item &&
-          typeof item === 'object' &&
-          typeof item.title === 'string' &&
-          typeof item.url === 'string'
-      )
-    )
-  }
-
-  // Type check the annotation
-  if (!isWikiAnnotation(lastAnnotation)) {
-    return null
-  }
-
-  const wikiAnnotations = lastAnnotation.data
-
-  if (wikiAnnotations.length === 0) {
+  const lastAnnotation = annotations[annotations.length - 1] as WikiAnnotationsData
+  
+  if (!lastAnnotation || lastAnnotation.type !== 'wiki-annotations') {
     return null
   }
 
   const header = (
     <div className="flex items-center gap-1">
-      <BookText size={16} />
+      <Book size={16} />
       <div>Wikipedia References</div>
     </div>
   )
+
+  const wikiAnnotations = lastAnnotation.data
+  if (!wikiAnnotations && !isLoading) {
+    return null
+  }
+
+  if ((!wikiAnnotations || wikiAnnotations.length === 0) && isLoading) {
+    return (
+      <CollapsibleMessage
+        role="assistant"
+        isCollapsible={true}
+        header={header}
+        isOpen={isOpen}
+        onOpenChange={onOpenChange}
+      >
+        <Skeleton className="w-full h-6" />
+      </CollapsibleMessage>
+    )
+  }
 
   return (
     <CollapsibleMessage
@@ -71,18 +75,23 @@ export const WikiAnnotations: React.FC<WikiAnnotationsProps> = ({
       onOpenChange={onOpenChange}
       showIcon={false}
     >
-      <div className="flex flex-wrap gap-2">
-        {wikiAnnotations.map((item, index) => (
-          <a
-            key={index}
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-2 py-1 bg-accent text-accent-foreground rounded-md hover:bg-accent/80 transition-colors"
-          >
-            {item.title}
-          </a>
-        ))}
+      <div className="flex flex-wrap">
+        {Array.isArray(wikiAnnotations) ? (
+          wikiAnnotations.map((item, index) => (
+            <div className="flex items-start w-full" key={index}>
+              <ArrowUpRight className="h-4 w-4 mr-2 mt-1 flex-shrink-0 text-accent-foreground/50" />
+              <Button
+                variant="link"
+                className="flex-1 justify-start px-0 py-1 h-fit font-semibold text-accent-foreground/50 whitespace-normal text-left"
+                onClick={() => window.open(item.url, '_blank')}
+              >
+                {item.title}
+              </Button>
+            </div>
+          ))
+        ) : (
+          <div>No references found</div>
+        )}
       </div>
     </CollapsibleMessage>
   )
