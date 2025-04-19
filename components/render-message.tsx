@@ -138,7 +138,6 @@ export function RenderMessage({
                 onOpenChange={open => onOpenChange(messageId, open)}
                 chatId={chatId}
                 showActions={isLastPart}
-                reasoning={reasoningTime > 0 && isLastPart}
               />
             )
           case 'reasoning':
