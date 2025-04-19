@@ -6,11 +6,13 @@ import rehypeExternalLinks from 'rehype-external-links'
 import rehypeKatex from 'rehype-katex'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
-import { Components } from 'react-markdown'
+import { Components, ReactMarkdownProps } from 'react-markdown'
 import { Citing } from './custom-link'
 import { CodeBlock } from './ui/codeblock'
 import { MemoizedReactMarkdown } from './ui/markdown'
 import { ReactNode } from 'react'
+import { DetailedHTMLProps, HTMLAttributes } from 'react'
+
 
 // Common mathematical patterns in plaintext
 const MATH_PATTERNS = {
@@ -138,7 +140,8 @@ const containsMath = (content: string): boolean => {
   return patterns.some(pattern => pattern.test(content))
 }
 //Scissor start
-type CodeProps = Components['code'] & {
+
+type CodeComponentProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
   node?: any
   inline?: boolean
   className?: string
@@ -155,7 +158,7 @@ export function BotMessage({
   const hasMath = containsMath(message || '')
   const processedContent = hasMath ? preprocessMath(message || '') : message
 
-  const CodeComponent: React.FC<CodeProps> = ({ node, inline, className, children, ...props }) => {
+  const CodeComponent = ({ node, inline, className, children, ...props }: CodeComponentProps) => {
     if (children && Array.isArray(children) && children.length > 0) {
       if (children[0] === '▍') {
         return (
@@ -232,7 +235,7 @@ export function BotMessage({
           className
         )}
         components={{
-          code: CodeComponent,
+          code: CodeComponent as Components['code'],
           a: Citing
         }}
       >
@@ -255,4 +258,5 @@ const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
     )
   }
 }
+
 //Scissor end
