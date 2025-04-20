@@ -60,14 +60,16 @@ export async function POST(request: NextRequest) {
     });
 
     // Make request to Wikifier service
-    const wikifierUrl = `https://www.wikifier.org/annotate-article?${params.toString()}`;
+    const wikifierUrl = `https://www.wikifier.org/annotate-article`;
     console.log(`[WIKIFY API] Sending request to Wikifier service for user ${currentUser}`);
 
     const response = await fetch(wikifierUrl, { 
-      method: "GET",
+      method: "POST",
       headers: {
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json' 
+      },
+      body: params.toString()
     });
     
     console.log(`[WIKIFY API] Wikifier response status: ${response.status}`);
