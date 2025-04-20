@@ -36,8 +36,8 @@ export async function handleStreamFinish({
   skipRelatedQuestions = false,
   annotations = []
 }: HandleStreamFinishParams) {
-  const currentUser = 'sagnikiitb';
-  const currentTimestamp = new Date().toISOString();
+  const currentUser = 'sagnikiitb'
+  const currentTimestamp = '2025-04-20 00:38:05' // Current timestamp from your system
 
   try {
     const extendedCoreMessages = convertToExtendedCoreMessages(originalMessages)
@@ -49,7 +49,7 @@ export async function handleStreamFinish({
       try {
         // Notify wiki annotations loading state
         const loadingWikiAnnotation: JSONValue = {
-          type: 'wiki-annotations',
+          type: 'wikipedia-references',
           data: [],
           timestamp: currentTimestamp,
           user: currentUser
@@ -57,22 +57,21 @@ export async function handleStreamFinish({
         dataStream.writeMessageAnnotation(loadingWikiAnnotation)
 
         // Use the correct API endpoint based on environment
-        const apiUrl = process.env.VERCEL_URL 
-          ? `https://rizzjee-01-app-05.vercel.app/api/wikify`
-          : 'http://localhost:3000/api/wikify';
+        const apiBase = process.env.VERCEL_URL 
+          ? `https://${process.env.VERCEL_URL}`
+          : 'http://localhost:3000';
+        const apiUrl = `${apiBase}/api/wikify`;
+
+        console.log(`[handleStreamFinish] Calling Wikify API at: ${apiUrl}`);
 
         // Fetch Wikipedia annotations
         const wikifyResponse = await fetch(apiUrl, {
           method: "POST",
           headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.WIKIFY_API_KEY}`,
-            "X-User-ID": currentUser
+            "Content-Type": "application/json"
           },
           body: JSON.stringify({ 
             text: lastMessage.content,
-            maxAnnotations: 5,
-            minConfidence: 0.7,
             timestamp: currentTimestamp,
             user: currentUser
           })
@@ -83,6 +82,7 @@ export async function handleStreamFinish({
         }
 
         const wikifyData: WikifyResponse = await wikifyResponse.json()
+        console.log('[handleStreamFinish] Received Wikify response:', wikifyData);
         
         if (wikifyData.error) {
           throw new Error(`Wikify API error: ${wikifyData.error}`)
@@ -93,31 +93,35 @@ export async function handleStreamFinish({
           const wikiAnnotation: ExtendedCoreMessage = {
             role: 'data',
             content: {
-              type: 'wiki-annotations',
-              data: wikifyData.annotations.map((annotation: WikiAnnotationData) => ({
-                title: annotation.title,
-                url: annotation.url,
-                confidence: annotation.confidence
-              })),
+              type: 'wikipedia-references',
+              data: {
+                annotations: wikifyData.annotations.map((annotation: WikiAnnotationData) => ({
+                  title: annotation.title,
+                  url: annotation.url,
+                  confidence: annotation.confidence
+                }))
+              },
               timestamp: currentTimestamp,
               user: currentUser
             } as JSONValue
           }
           
+          console.log('[handleStreamFinish] Created wiki annotation:', wikiAnnotation);
           dataStream.writeMessageAnnotation(wikiAnnotation.content as JSONValue)
           allAnnotations.push(wikiAnnotation)
         } else {
+          console.log('[handleStreamFinish] No annotations found in Wikify response');
           dataStream.writeMessageAnnotation({
-            type: 'wiki-annotations',
-            data: [],
+            type: 'wikipedia-references',
+            data: { annotations: [] },
             timestamp: currentTimestamp,
             user: currentUser
           })
         }
       } catch (error) {
-        console.error('Failed to fetch wiki annotations:', error)
+        console.error('[handleStreamFinish] Failed to fetch wiki annotations:', error)
         dataStream.writeMessageAnnotation({
-          type: 'wiki-annotations',
+          type: 'wikipedia-references',
           error: 'Failed to fetch Wikipedia annotations',
           timestamp: currentTimestamp,
           user: currentUser
