@@ -31,17 +31,22 @@ export const WikipediaReferences: React.FC<WikipediaReferencesProps> = ({
   isOpen,
   onOpenChange
 }) => {
+  console.log('[WikipediaReferences] Received annotations:', annotations);
+
   const { isLoading } = useChat({
     id: CHAT_ID
   })
 
-  if (!annotations) {
-    return null
+  if (!annotations || annotations.length === 0) {
+    console.log('[WikipediaReferences] No annotations available');
+    return null;
   }
 
   const lastWikipediaAnnotation = annotations[
     annotations.length - 1
-  ] as WikipediaAnnotation
+  ] as WikipediaAnnotation;
+  
+  console.log('[WikipediaReferences] Last Wikipedia annotation:', lastWikipediaAnnotation);
 
   const header = (
     <div className="flex items-center gap-1">
@@ -50,12 +55,15 @@ export const WikipediaReferences: React.FC<WikipediaReferencesProps> = ({
     </div>
   )
 
-  const wikipediaRefs = lastWikipediaAnnotation?.data
+  const wikipediaRefs = lastWikipediaAnnotation?.data;
+  console.log('[WikipediaReferences] Wikipedia refs:', wikipediaRefs);
+
   if ((!wikipediaRefs || !wikipediaRefs.annotations) && !isLoading) {
-    return null
+    console.log('[WikipediaReferences] No valid refs found and not loading');
+    return null;
   }
 
-  if (wikipediaRefs.annotations.length === 0 && isLoading) {
+  if (!wikipediaRefs?.annotations?.length && isLoading) {
     return (
       <CollapsibleMessage
         role="assistant"
