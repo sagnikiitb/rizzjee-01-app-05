@@ -6,7 +6,6 @@ import { Message, useChat } from 'ai/react'
 import { toast } from 'sonner'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
-import ChatOutput from './ChatOutput'
 import { useEffect, useCallback, useRef } from 'react'
 
 export function Chat({
@@ -21,7 +20,9 @@ export function Chat({
   models?: Model[]
 }) {
   const dbInitialized = useRef(false)
-    // Initialize database on first load
+  const currentUser = 'sagnikiitb'
+  
+  // Initialize database on first load
   useEffect(() => {
     const initDatabase = async () => {
       if (dbInitialized.current) return
@@ -76,15 +77,16 @@ export function Chat({
         },
         body: JSON.stringify({
           chatId: id,
-          messages: messagesToSave
+          messages: messagesToSave,
+          timestamp: new Date().toISOString(),
+          user: currentUser
         })
       })
+      
       if (!response.ok) {
         const data = await response.json()
         if (data.code === 'DB_NOT_INITIALIZED') {
-          // Try to initialize the database
           await fetch('/api/init-db')
-          // Retry the save once
           return await saveMessages(messagesToSave)
         }
         throw new Error(data.error || 'Failed to save messages')
@@ -125,8 +127,6 @@ export function Chat({
     handleSubmit(e)
   }
 
-  const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant')
-
   return (
     <div className="flex flex-col w-full max-w-3xl pt-14 pb-40 mx-auto stretch">
       <ChatMessages
@@ -136,9 +136,6 @@ export function Chat({
         isLoading={isLoading}
         chatId={id}
       />
-      {!isLoading && lastAssistantMessage && (
-        <ChatOutput answer={lastAssistantMessage.content} />
-      )}
       <ChatPanel
         input={input}
         handleInputChange={handleInputChange}
