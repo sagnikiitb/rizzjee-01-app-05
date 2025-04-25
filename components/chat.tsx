@@ -1,25 +1,27 @@
 'use client'
 
-import { CHAT_ID } from '@/lib/constants'
+import { CHAT_ID } from '@/lib/constants' //@ refers to root project dir, that is, 'rizzjee-01-app-05/'
 import { Model } from '@/lib/types/models'
-import { Message, useChat } from 'ai/react'
-import { toast } from 'sonner'
-import { ChatMessages } from './chat-messages'
+import { Message, useChat } from 'ai/react' // 'ai' is an external npm module in package.json : "ai": "^4.1.61"
+import { toast } from 'sonner' //'sonner' is also an external npm module in package.json. https://emilkowal.ski/ui/building-a-toast-component  
+import { ChatMessages } from './chat-messages' // . refers to loacl relative dir; 'rizzjee-01-app-05/components/' 
 import { ChatPanel } from './chat-panel'
 import { useEffect, useCallback, useRef } from 'react'
 
 export function Chat({
-  id,
+  id, // Define just the names of all the props/arguments
   savedMessages = [],
   query,
   models
 }: {
-  id: string
+  id: string //Define the types of the named props here
   savedMessages?: Message[]
   query?: string
   models?: Model[]
 }) {
-  const dbInitialized = useRef(false)
+  const dbInitialized = useRef(false) //useRef, useState are hooks. useRef returns a mutable pointer/reference to object (call by reference); useState returns an entire copy (call by value)
+  //useRef saves memory, time and compute; and makes sure the UI is not re-rendered everytime the object is modified
+  //useRef returns just one attribute/property of the obejct called 'current' One can only modify through <object>.current syntax, this ensures code safety
   const currentUser = 'sagnikiitb'
   
   // Initialize database on first load
