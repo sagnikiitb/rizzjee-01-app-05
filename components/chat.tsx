@@ -93,14 +93,16 @@ export function Chat({
     //Defines the names of the props
   } = useChat({
     //And this defines the types of the named props
-    initialMessages: savedMessages, //variable 'initialMessages' is of type 'savedMessages'
-    id: CHAT_ID, //variable 'id' is of type 'CHAT_ID'
+    initialMessages: savedMessages, //variable 'initialMessages' is assigned the valueof 'savedMessages'
+    id: CHAT_ID, //variable 'id' is assigned valueof 'CHAT_ID'
     // In the main Chat() function; 'id' is defined to be of type 'string'
-    // Over here, in this subfunction, we  upgrade the type definition to be of type 'CHAT_ID'
-    // This ensures more type safety and makes code more specific (perhaps?)
+    //We use : operator to assign both TYPE and VALUE
+    // Possible point of confusion!
+    
     body: {
       id //Define a "type-of-types"/ kind of like C++ structs. We name it "body"
-      // It has only one param, called "id" of type CHAT_ID
+      // It has only one param, called "id" of value CHAT_ID and type 'string'
+      
     },
     onFinish: async (message) => {
       // Update URL and save messages when chat response finishes
@@ -164,21 +166,23 @@ export function Chat({
           'Content-Type': 'application/json', //tell ki what you're about to POST is going to be a JSON file
         },
         body: JSON.stringify({ //Define the structure of the JSON file
-          chatId: id, //Variable 'chatId' in this going-to-be-posted JSON file is  'id'
-          // 'id' itself is of type 'CHAT_ID'
+          chatId: id, //Variable 'chatId' in this going-to-be-posted JSON file is assigned valueof  'id'
+          // 'id' itself is of type 'string'
+          // All this is very different from 'CHAT_ID'
+          // Be careful about casee
           //BE VERY CAREFUL, PAUSE, READ ABOVE AGAIN!
-          //Type of types is a very real thing in Typescript
-          messages: messagesToSave, //
-          timestamp: new Date().toISOString(),
-          user: currentUser
+          //<Type of types> or <valueof types> is a very real thing in Typescript
+          messages: messagesToSave, // 'messages' is given valueof 'messagesToSave' 
+          timestamp: new Date().toISOString(), //Accurate timestamp
+          user: currentUser //'user' set to valueof 'currentUser'
         })
       })
-      
+      // Handle database initialization errors
       if (!response.ok) {
         const data = await response.json()
         if (data.code === 'DB_NOT_INITIALIZED') {
           await fetch('/api/init-db')
-          return await saveMessages(messagesToSave)
+          return await saveMessages(messagesToSave) //Retry saving messages
         }
         throw new Error(data.error || 'Failed to save messages')
       }
@@ -188,6 +192,12 @@ export function Chat({
     }
   }, [id])
 
+
+  
+/**
+   * Effect hook to save messages when component unmounts or before page unload
+   * Ensures chat history is preserved even if user closes the page
+   */
   // Save messages when component unmounts
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -204,22 +214,33 @@ export function Chat({
       }
     }
   }, [messages, saveMessages])
-
+ /**
+   * Handler for when a query is selected
+   * Appends the selected query as a user message
+   * @param {string} query - The selected query text
+   */
   const onQuerySelect = (query: string) => {
     append({
       role: 'user',
       content: query
     })
   }
-
+ /**
+   * Custom submit handler
+   * Prevents default form submission and clears additional data
+   * @param {React.FormEvent<HTMLFormElement>} e - Form event
+   */
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setData(undefined)
     handleSubmit(e)
   }
-
+  
+  // Render the chat interface
   return (
     <div className="flex flex-col w-full max-w-3xl pt-14 pb-40 mx-auto stretch">
+      {/* Classic CSS CODE the above line */}
+      {/* Chat messages component displays the conversation */}
       <ChatMessages
         messages={messages}
         data={data}
@@ -227,6 +248,7 @@ export function Chat({
         isLoading={isLoading}
         chatId={id}
       />
+       {/* Chat panel component provides input and control interface */}
       <ChatPanel
         input={input}
         handleInputChange={handleInputChange}
