@@ -1,7 +1,7 @@
 'use client' //Tells this component is client-side ONLY in Next.js syntax
 
 import { CHAT_ID } from '@/lib/constants' //@ refers to root project dir, that is, 'rizzjee-01-app-05/'
-//Import  CHAT_ID type definition from constants
+//Import  CHAT_ID constant from constants
 import { Model } from '@/lib/types/models'
 //Import Model type definition
 import { Message, useChat } from 'ai/react' // 'ai' is an external npm module in package.json : "ai": "^4.1.61"
@@ -147,18 +147,28 @@ export function Chat({
   })
   // A Toast is just a small notification/error message which is non-intrusive, that is,
   // doesn't hinder the main flow of the program
-  
 
+
+  
+  /**
+   * Function to save messages to the backend
+   * Uses useCallback to memoize the function (fancy word: pointer waali thing basically)
+   * and prevent unnecessary re-renders
+   * @param {Message[]} messagesToSave - Array of messages to be saved
+   */
   const saveMessages = useCallback(async (messagesToSave: Message[]) => {
     try {
-      const response = await fetch('/api/chat/save', {
+      const response = await fetch('/api/chat/save', { //POST req to '/api/chat/save' URL/endpoint
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json', //tell ki what you're about to POST is going to be a JSON file
         },
-        body: JSON.stringify({
-          chatId: id,
-          messages: messagesToSave,
+        body: JSON.stringify({ //Define the structure of the JSON file
+          chatId: id, //Variable 'chatId' in this going-to-be-posted JSON file is  'id'
+          // 'id' itself is of type 'CHAT_ID'
+          //BE VERY CAREFUL, PAUSE, READ ABOVE AGAIN!
+          //Type of types is a very real thing in Typescript
+          messages: messagesToSave, //
           timestamp: new Date().toISOString(),
           user: currentUser
         })
