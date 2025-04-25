@@ -22,16 +22,21 @@ import { useEffect, useCallback, useRef } from 'react' // Import React hooks
  * @param {Model[]} props.models - Available chat models
  */
 
-export function Chat({
-  id, // Define just the names of all the props/arguments
+export function Chat({ 
+  // Define just the names of all the props/arguments
+  
+  id, 
   savedMessages = [], // Default to empty array if no saved messages
   query,
   models
 }: {
-  id: string //Define the types of the named props here
-  savedMessages?: Message[]
-  query?: string
-  models?: Model[]
+//Define the types of the named props here
+  
+  id: string  // 'id' is of type 'string' This is a compulsory param!
+  savedMessages?: Message[] //The ? marks that the thing is optional
+  //'savedMessages'  is an optional param of type 'Message[]' array
+  query?: string // 'query' is an optional param of type 'string' 
+  models?: Model[] //'models' is a optional param of type 'Model[]' array
 }) {
   // Create a ref to track database initialization status
   // useRef prevents unnecessary re-renders and persists across component renders
@@ -47,7 +52,7 @@ export function Chat({
    * Effect hook to initialize the database on component first load
    * Makes an API call to /api/init-db and handles any errors
    */
-  useEffect(() => {
+  useEffect(() => { //'useEffect' is a sub arrow function inside main function 'Chat'
     const initDatabase = async () => {
       if (dbInitialized.current) return  // Prevent multiple initializations
       
@@ -90,8 +95,12 @@ export function Chat({
     //And this defines the types of the named props
     initialMessages: savedMessages, //variable 'initialMessages' is of type 'savedMessages'
     id: CHAT_ID, //variable 'id' is of type 'CHAT_ID'
+    // In the main Chat() function; 'id' is defined to be of type 'string'
+    // Over here, in this subfunction, we  upgrade the type definition to be of type 'CHAT_ID'
+    // This ensures more type safety and makes code more specific (perhaps?)
     body: {
-      id //Define a "type-of-types" defined as 'body' which is a collection of only one type defined as 'id'
+      id //Define a "type-of-types"/ kind of like C++ structs. We name it "body"
+      // It has only one param, called "id" of type CHAT_ID
     },
     onFinish: async (message) => {
       // Update URL and save messages when chat response finishes
@@ -102,12 +111,43 @@ export function Chat({
       window.history.replaceState({}, '', `/search/${id}`)
       //window.history.replaceState() updates the browser's URL
         //without creating a new entry in the history (so the back button won't go to the previous URL)
+      /**
+      * window.history.replaceState(<1st param>={},<2nd param>= '',<3rd param>= `/search/${id}`)
+      * <1st param> = {} (State Object)
+      * This is a JavaScript object that contains data you want to associate with the new history entry
+      * In this case, it's an empty object {} for now
+      * You can use this to store any serializable data that you might want to access later
+      * <2nd param> = '' (Title)
+      * This is the title parameter, which is currently unused in most browsers
+      * It's typically passed as an empty string '' as browsers ignore it for security reasons
+      * <3rd param> = /search/${id} (URL):
+      * This is the new URL you want to show in the browser's address bar
+      * Uses template literal syntax to create a dynamic URL
+      * ${id} is a variable interpolation that gets replaced with the actual value of id
+      * That is, ${id} is the Stringify'ed version of the variable 'id' of type 'CHAT_ID
+      */
       await saveMessages([...messages, message])
+      // await saveMessages([...messages, message]) saves all existing messages plus the new message
+      // This weird syntax is called the "Spread" operator 
+    //The [...messages, message] syntax uses the spread operator to create a new array
+      //with all existing messages plus the new one
+      /**
+      * Remember this type definition at the beginning of useEffect() ?
+      * const {
+      * messages, // Array of chat messages 
+      * .. rest of code }
+      */
+
+      //This syntax is just saying ki 'messages' waali array pe ek aur message variable add karo
+
     },
     onError: error => {
-      toast.error(`Error in chat: ${error.message}`)
+      toast.error(`Error in chat: ${error.message}`) //if error, then throw notification
     }
   })
+  // A Toast is just a small notification/error message which is non-intrusive, that is,
+  // doesn't hinder the main flow of the program
+  
 
   const saveMessages = useCallback(async (messagesToSave: Message[]) => {
     try {
