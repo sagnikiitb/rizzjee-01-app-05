@@ -13,6 +13,35 @@ import { MemoizedReactMarkdown } from './ui/markdown'
 import { ReactNode } from 'react'
 import { DetailedHTMLProps, HTMLAttributes } from 'react'
 
+// URL pattern to detect and preserve URLs
+const URL_PATTERN = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[a-zA-Z]{2,}\/[^\s]*)/g;
+
+// Function to preserve URLs during math conversion
+const preserveUrls = (content: string): { processedText: string, urlMap: Map<string, string> } => {
+  const urlMap = new Map<string, string>();
+  let counter = 0;
+  
+  // Replace URLs with placeholders
+  const processedText = content.replace(URL_PATTERN, (match) => {
+    const placeholder = `__URL_PLACEHOLDER_${counter}__`;
+    urlMap.set(placeholder, match);
+    counter++;
+    return placeholder;
+  });
+  
+  return { processedText, urlMap };
+};
+
+// Function to restore URLs from placeholders
+const restoreUrls = (content: string, urlMap: Map<string, string>): string => {
+  let restoredContent = content;
+  
+  urlMap.forEach((url, placeholder) => {
+    restoredContent = restoredContent.replace(new RegExp(placeholder, 'g'), url);
+  });
+  
+  return restoredContent;
+};
 
 // Common mathematical patterns in plaintext
 const MATH_PATTERNS = {
@@ -35,8 +64,13 @@ const MATH_PATTERNS = {
   }
 }
 
-// Convert plaintext math to LaTeX
+// Convert plaintext math to LaTeX with URL preservation
 const convertPlainTextToLaTeX = (text: string): string => {
+  // Skip conversion if text contains URL placeholder
+  if (text.includes('__URL_PLACEHOLDER_')) {
+    return text;
+  }
+
   // Handle fractions
   text = text.replace(MATH_PATTERNS.fractions, '\\frac{$1}{$2}')
 
@@ -65,48 +99,59 @@ const convertPlainTextToLaTeX = (text: string): string => {
 
 // Convert Markdown-style math to LaTeX
 const convertMarkdownToLaTeX = (text: string): string => {
-  // Handle GitHub-flavored Markdown math blocks with ```math
+  // Preserve existing LaTeX expressions to avoid double conversion
+  text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match) => `__PRESERVED_DISPLAY_MATH__${match}__PRESERVED_DISPLAY_MATH__`);
+  text = text.replace(/\$([^$\n]+)\$/g, (match) => `__PRESERVED_INLINE_MATH__${match}__PRESERVED_INLINE_MATH__`);
+
+  // Handle GitHub-flavored Markdown math blocks with ```
   text = text.replace(
-    /```math\s*([\s\S]*?)\s*```/g,
-    (_, math) => `\n\\[\n${math.trim()}\n\\]\n`
+    /```math\s*([\s\S]*?)\s*```
+    (_, math) => `\n\$$\n${math.trim()}\n\$$\n`
   )
 
   // Handle inline math with single backticks and dollar signs
   text = text.replace(
     /`\$([^`]+)\$`/g,
-    (_, math) => `\\(${math.trim()}\\)`
+    (_, math) => `\$$${math.trim()}\$$`
   )
 
   // Handle multi-line math blocks with triple backticks
   text = text.replace(
-    /```\n\$\$([\s\S]*?)\$\$\n```/g,
-    (_, math) => `\n\\[\n${math.trim()}\n\\]\n`
+    /```\n\$\$([\s\S]*?)\$\$\n```
+    (_, math) => `\n\$$\n${math.trim()}\n\$$\n`
   )
+
+  // After all conversions, restore preserved math
+  text = text.replace(/__PRESERVED_DISPLAY_MATH__\$\$([\s\S]*?)\$\$__PRESERVED_DISPLAY_MATH__/g, '$$$1$$');
+  text = text.replace(/__PRESERVED_INLINE_MATH__\$([^$\n]+)\$__PRESERVED_INLINE_MATH__/g, '$$$1$');
 
   return text
 }
 
-// Enhanced preprocessing function
+// Enhanced preprocessing function with URL preservation
 const preprocessMath = (content: string): string => {
   if (!content) return ''
 
-  // First handle Markdown-style math
-  let processedContent = convertMarkdownToLaTeX(content)
-
-  // Look for potential plaintext math expressions
-  const plainTextMathRegex = /([^$\\\n])([\d\w]+[\/\^_\*][\d\w]+|sqrt\([^)]+\)|\b(alpha|beta|gamma|delta|theta|pi|sigma|omega)\b)/g
+  // First preserve URLs
+  const { processedText, urlMap } = preserveUrls(content);
+  
+  // Handle Markdown-style math
+  let processedContent = convertMarkdownToLaTeX(processedText)
+  
+  // Look for potential plaintext math expressions, avoiding URL placeholders
+  const plainTextMathRegex = /([^$\\\n])([\d\w]+[\/\^_\*][\d\w]+|sqrt$$[^)]+$$|\b(alpha|beta|gamma|delta|theta|pi|sigma|omega)\b)/g
   processedContent = processedContent.replace(plainTextMathRegex, (match, pre, expr) => {
-    // Don't convert if it's already part of a LaTeX expression
-    if (pre.endsWith('\\') || pre.endsWith('$')) return match
-    return `${pre}\\(${convertPlainTextToLaTeX(expr)}\\)`
+    // Don't convert if it's already part of a LaTeX expression or contains a URL placeholder
+    if (pre.endsWith('\\') || pre.endsWith('$') || expr.includes('__URL_PLACEHOLDER_')) return match
+    return `${pre}\$$${convertPlainTextToLaTeX(expr)}\$$`
   })
-
+  
   // Handle existing LaTeX expressions
   processedContent = processedContent
     // Handle display math
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_, equation) => `\n$$${equation.trim()}$$\n`)
+    .replace(/\\$$([\s\S]*?)\\$$/g, (_, equation) => `\n$$${equation.trim()}$$\n`)
     // Handle inline math
-    .replace(/\\\(([\s\S]*?)\\\)/g, (_, equation) => `$${equation.trim()}$`)
+    .replace(/\\$$([\s\S]*?)\\$$/g, (_, equation) => `$${equation.trim()}$`)
     // Handle align environments
     .replace(/\\begin{align\*?}/g, '\\begin{aligned}')
     .replace(/\\end{align\*?}/g, '\\end{aligned}')
@@ -114,32 +159,38 @@ const preprocessMath = (content: string): string => {
     .replace(/([^$])\$\$/g, '$1\n$$')
     .replace(/\$\$([^$])/g, '$$\n$1')
     .replace(/([^$])\$([^$])/g, '$1 $ $2')
-
-  return processedContent
+  
+  // Restore URLs
+  return restoreUrls(processedContent, urlMap);
 }
 
-// Enhanced math detection
+// Enhanced math detection that ignores URLs
 const containsMath = (content: string): boolean => {
   if (!content) return false
-
+  
+  // First preserve URLs
+  const { processedText } = preserveUrls(content);
+  
   const patterns = [
-    /\\\[([\s\S]*?)\\\]/,          // Display math
-    /\\\(([\s\S]*?)\\\)/,          // Inline math
-    /\$\$([\s\S]*?)\$\$/,          // Display math with $$
-    /\$[^$\n]+\$/,                 // Inline math with single $
-    /\\begin\{[^}]+\}/,            // Environment blocks
-    /```math/,                      // Markdown math blocks
-    /`\$[^`]+\$`/,                 // Markdown inline math
-    /(\d+)\/(\d+)/,                // Fractions
-    /(\w+)\^(\d+|\{\w+\})/,        // Exponents
-    /sqrt\([^)]+\)/,               // Square roots
-    /(\w+)_(\d+|\{\w+\})/,         // Subscripts
+    /\\$$([\s\S]*?)\\$$/, // Display math
+    /\\$$([\s\S]*?)\\$$/, // Inline math
+    /\$\$([\s\S]*?)\$\$/, // Display math with $$
+    /\$[^$\n]+\$/, // Inline math with single $
+    /\\begin\{[^}]+\}/, // Environment blocks
+    /```math/, // Markdown math blocks
+    /`\$[^`]+\$`/, // Markdown inline math
+    /(\d+)\/(\d+)/, // Fractions
+    /(\w+)\^(\d+|\{\w+\})/, // Exponents
+    /sqrt\([^)]+\)/, // Square roots
+    /(\w+)_(\d+|\{\w+\})/, // Subscripts
     /\b(alpha|beta|gamma|delta|theta|pi|sigma|omega)\b/ // Greek letters
   ]
-
-  return patterns.some(pattern => pattern.test(content))
+  
+  return patterns.some(pattern => pattern.test(processedText))
 }
+
 //Scissor start
+
 type CodeComponentProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
   node?: any
   inline?: boolean
@@ -156,43 +207,42 @@ export function BotMessage({
 }) {
   const hasMath = containsMath(message || '')
   const processedContent = hasMath ? preprocessMath(message || '') : message
-
+  
   const CodeComponent = ({ node, inline, className, children, ...props }: CodeComponentProps) => {
-       if (children && Array.isArray(children) && children.length > 0) {
+    if (children && Array.isArray(children) && children.length > 0) {
       if (children[0] === '▍') {
-        return (
-          <span className="mt-1 cursor-default animate-pulse">▍</span>
-        )
+        return <span className="mt-1 animate-pulse cursor-default">▍</span>
       }
+      
       if (typeof children[0] === 'string') {
         children[0] = children[0].replace('`▍`', '▍')
       }
     }
-
+    
     const match = /language-(\w+)/.exec(className || '')
     
     // Handle math blocks
     if (match && match[1] === 'math') {
       return (
-        <div className="math-block my-2 overflow-x-auto">
+        <div className="math-block">
           {String(children).replace(/\n$/, '')}
         </div>
       )
     }
-
+    
     // Handle inline math
-    if (inline && 
-        typeof children === 'string' && 
-        children.startsWith('$') && 
+    if (inline &&
+        typeof children === 'string' &&
+        children.startsWith('$') &&
         children.endsWith('$')) {
       const mathContent = children.slice(1, -1)
       return (
-        <span className="math-inline">
+        <span className="inline-math">
           {mathContent}
         </span>
       )
     }
-
+    
     // Default inline code handling
     if (inline) {
       return (
@@ -201,51 +251,35 @@ export function BotMessage({
         </code>
       )
     }
-
+    
     // Default code block handling
     return (
       <CodeBlock
-        key={Math.random()}
         language={(match && match[1]) || ''}
         value={String(children).replace(/\n$/, '')}
         {...props}
       />
     )
-    // [Rest of the CodeComponent implementation remains the same]
   }
-
+  
   return (
-    <LaTeXErrorBoundary>
+    <div className={cn('chat-message-text', className)}>
       <MemoizedReactMarkdown
-        rehypePlugins={[
-          [rehypeExternalLinks, { target: '_blank' }],
-          [rehypeKatex, {
-            strict: false,
-            trust: true,
-            throwOnError: false,
-            maxSize: 500,
-            maxExpand: 1000,
-            minRuleThickness: 0.05
-          }]
-        ]}
+        className="prose break-words dark:prose-invert sm:min-w-70 prose-p:leading-relaxed prose-pre:p-0"
         remarkPlugins={[remarkGfm, remarkMath]}
-        className={cn(
-          'prose-sm prose-neutral prose-a:text-accent-foreground/50',
-          'math-content',
-          className
-        )}
+        rehypePlugins={[
+          rehypeKatex,
+          [rehypeExternalLinks, { target: '_blank' }]
+        ]}
         components={{
-          code: CodeComponent as Components['code'],
-          a: Citing
+          code: CodeComponent
         }}
       >
         {processedContent}
       </MemoizedReactMarkdown>
-    </LaTeXErrorBoundary>
+    </div>
   )
 }
-
-
 
 // Error boundary component
 const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
@@ -254,9 +288,9 @@ const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   } catch (error) {
     console.error('LaTeX Rendering Error:', error)
     return (
-      <div className="latex-error p-2 text-sm text-red-500 bg-red-50 rounded">
-        <p>Failed to render LaTeX expression</p>
-      </div>
+      <span className="text-red-500">
+        Failed to render LaTeX expression
+      </span>
     )
   }
 }
