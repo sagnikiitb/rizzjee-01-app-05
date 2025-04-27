@@ -158,6 +158,59 @@ export function BotMessage({
   const processedContent = hasMath ? preprocessMath(message || '') : message
 
   const CodeComponent = ({ node, inline, className, children, ...props }: CodeComponentProps) => {
+       if (children && Array.isArray(children) && children.length > 0) {
+      if (children[0] === '▍') {
+        return (
+          <span className="mt-1 cursor-default animate-pulse">▍</span>
+        )
+      }
+      if (typeof children[0] === 'string') {
+        children[0] = children[0].replace('`▍`', '▍')
+      }
+    }
+
+    const match = /language-(\w+)/.exec(className || '')
+    
+    // Handle math blocks
+    if (match && match[1] === 'math') {
+      return (
+        <div className="math-block my-2 overflow-x-auto">
+          {String(children).replace(/\n$/, '')}
+        </div>
+      )
+    }
+
+    // Handle inline math
+    if (inline && 
+        typeof children === 'string' && 
+        children.startsWith('$') && 
+        children.endsWith('$')) {
+      const mathContent = children.slice(1, -1)
+      return (
+        <span className="math-inline">
+          {mathContent}
+        </span>
+      )
+    }
+
+    // Default inline code handling
+    if (inline) {
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      )
+    }
+
+    // Default code block handling
+    return (
+      <CodeBlock
+        key={Math.random()}
+        language={(match && match[1]) || ''}
+        value={String(children).replace(/\n$/, '')}
+        {...props}
+      />
+    )
     // [Rest of the CodeComponent implementation remains the same]
   }
 
