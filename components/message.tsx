@@ -60,7 +60,6 @@ const MATH_PATTERNS = {
     pi: /\bpi\b/g,
     sigma: /\bsigma\b/g,
     omega: /\bomega\b/g,
-    // Add more Greek letters as needed
   }
 }
 
@@ -106,19 +105,19 @@ const convertMarkdownToLaTeX = (text: string): string => {
   // Handle GitHub-flavored Markdown math blocks with ```
   text = text.replace(
     /```math\s*([\s\S]*?)\s*```
-    (_, math) => `\n\$$\n${math.trim()}\n\$$\n`
+    (_, math) => `\n$$\n${math.trim()}\n$$\n`
   )
 
   // Handle inline math with single backticks and dollar signs
   text = text.replace(
     /`\$([^`]+)\$`/g,
-    (_, math) => `\$$${math.trim()}\$$`
+    (_, math) => `$${math.trim()}$`
   )
 
   // Handle multi-line math blocks with triple backticks
   text = text.replace(
     /```\n\$\$([\s\S]*?)\$\$\n```
-    (_, math) => `\n\$$\n${math.trim()}\n\$$\n`
+    (_, math) => `\n$$\n${math.trim()}\n$$\n`
   )
 
   // After all conversions, restore preserved math
@@ -143,7 +142,7 @@ const preprocessMath = (content: string): string => {
   processedContent = processedContent.replace(plainTextMathRegex, (match, pre, expr) => {
     // Don't convert if it's already part of a LaTeX expression or contains a URL placeholder
     if (pre.endsWith('\\') || pre.endsWith('$') || expr.includes('__URL_PLACEHOLDER_')) return match
-    return `${pre}\$$${convertPlainTextToLaTeX(expr)}\$$`
+    return `${pre}$$${convertPlainTextToLaTeX(expr)}$$`
   })
   
   // Handle existing LaTeX expressions
@@ -188,8 +187,6 @@ const containsMath = (content: string): boolean => {
   
   return patterns.some(pattern => pattern.test(processedText))
 }
-
-//Scissor start
 
 type CodeComponentProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
   node?: any
@@ -294,5 +291,3 @@ const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
     )
   }
 }
-
-//Scissor end
