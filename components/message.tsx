@@ -72,7 +72,7 @@ const convertPlainTextToLaTeX = (text: string): string => {
 // Convert Markdown-style math to LaTeX
 const convertMarkdownToLaTeX = (text: string): string => {
   // Handle GitHub-flavored Markdown math blocks with ```math
-    const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\S+\.(com|org|edu|co|in|io|net|gov|mil|us|uk|ca|au|de|fr|jp|ru|cn|br|it|nl|se|no|fi|dk|pl|ch|at|be|es|pt|gr|cz|hu|ro|nz|ie|il|za|ar|mx|cl|pe|co|ve|sg|my|ph|vn|sa|ae|eg|pk|ng)\b/i;
+  const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\S+\.(com|org|edu|co|in|io|net|gov|mil|us|uk|ca|au|de|fr|jp|ru|cn|br|it|nl|se|no|fi|dk|pl|ch|at|be|es|pt|gr|cz|hu|ro|nz|ie|il|za|ar|mx|cl|pe|co|ve|sg|my|ph|vn|sa|ae|eg|pk|ng)(?:\/[^\s]*)?/i;
     if (urlRegex.test(text)) {
         return text; // It's part of a URL, don't convert
         }
@@ -105,7 +105,7 @@ const preprocessMath = (content: string): string => {
 
   // Look for potential plaintext math expressions
   const plainTextMathRegex = /([^$\\\n])([\d\w]+[\/\^_\*][\d\w]+|sqrt\([^)]+\)|\b(alpha|beta|gamma|delta|theta|pi|sigma|omega|lambda|zeta|tau)\b)/g;
-  const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\S+\.(com|org|edu|co|in|io|net|gov|mil|us|uk|ca|au|de|fr|jp|ru|cn|br|it|nl|se|no|fi|dk|pl|ch|at|be|es|pt|gr|cz|hu|ro|nz|ie|il|za|ar|mx|cl|pe|co|ve|sg|my|ph|vn|sa|ae|eg|pk|ng)\b/i;
+  const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\S+\.(com|org|edu|co|in|io|net|gov|mil|us|uk|ca|au|de|fr|jp|ru|cn|br|it|nl|se|no|fi|dk|pl|ch|at|be|es|pt|gr|cz|hu|ro|nz|ie|il|za|ar|mx|cl|pe|co|ve|sg|my|ph|vn|sa|ae|eg|pk|ng)(?:\/[^\s]*)?/i;
   processedContent = processedContent.replace(plainTextMathRegex, (match, pre, expr) => {
     // Don't convert if it's already part of a LaTeX expression or if it's a URL
     if (pre.endsWith('\\') || pre.endsWith('$')) return match
