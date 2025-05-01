@@ -69,40 +69,16 @@ const convertPlainTextToLaTeX = (text: string): string => {
   return text
 }
 
-// Convert Markdown-style math to LaTeX
-const convertMarkdownToLaTeX = (text: string): string => {
-  // Handle GitHub-flavored Markdown math blocks with ```math
-  const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\S+\.(com|org|edu|co|in|io|net|gov|mil|us|uk|ca|au|de|fr|jp|ru|cn|br|it|nl|se|no|fi|dk|pl|ch|at|be|es|pt|gr|cz|hu|ro|nz|ie|il|za|ar|mx|cl|pe|co|ve|sg|my|ph|vn|sa|ae|eg|pk|ng)(?:\/[^\s]*)?/i;
-    if (urlRegex.test(text)) {
-        return text; // It's part of a URL, don't convert
-        }
-  text = text.replace(
-    /```math\s*([\s\S]*?)\s*```/g,
-    (_, math) => `\n\\[\n${math.trim()}\n\\]\n`
-  )
 
-  // Handle inline math with single backticks and dollar signs
-  text = text.replace(
-    /`\$([^`]+)\$`/g,
-    (_, math) => `\\(${math.trim()}\\)`
-  )
-
-  // Handle multi-line math blocks with triple backticks
-  text = text.replace(
-    /```\n\$\$([\s\S]*?)\$\$\n```/g,
-    (_, math) => `\n\\[\n${math.trim()}\n\\]\n`
-  )
-
-  return text
-}
 
 // Enhanced preprocessing function
 const preprocessMath = (content: string): string => {
   if (!content) return ''
 
   // First handle Markdown-style math
-  let processedContent = convertMarkdownToLaTeX(content)
-
+  //let processedContent = convertMarkdownToLaTeX(content)
+  //Simplify
+  let processedContent = content
   // Look for potential plaintext math expressions
   const plainTextMathRegex = /([^$\\\n])([\d\w]+[\/\^_\*][\d\w]+|sqrt\([^)]+\)|\b(alpha|beta|gamma|delta|theta|pi|sigma|omega|lambda|zeta|tau)\b)/g;
   const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\S+\.(com|org|edu|co|in|io|net|gov|mil|us|uk|ca|au|de|fr|jp|ru|cn|br|it|nl|se|no|fi|dk|pl|ch|at|be|es|pt|gr|cz|hu|ro|nz|ie|il|za|ar|mx|cl|pe|co|ve|sg|my|ph|vn|sa|ae|eg|pk|ng)(?:\/[^\s]*)?/i;
