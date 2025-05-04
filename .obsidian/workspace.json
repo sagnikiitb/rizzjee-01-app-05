@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Rada's Notes/Organization of the Notes.md",
+                "file": "Rada's Notes/Kya/Kya.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Organization of the Notes"
+              "title": "Kya"
             }
           }
         ],
@@ -137,7 +137,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Rada's Notes/Organization of the Notes.md",
+                "file": "Rada's Notes/Kya/Kya.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -147,7 +147,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Organization of the Notes"
+              "title": "Backlinks for Kya"
             }
           },
           {
@@ -156,12 +156,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Rada's Notes/Organization of the Notes.md",
+                "file": "Rada's Notes/Kya/Kya.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Organization of the Notes"
+              "title": "Outgoing links from Kya"
             }
           },
           {
@@ -185,13 +185,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Rada's Notes/Organization of the Notes.md",
+                "file": "Rada's Notes/Kya/Kya.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Organization of the Notes"
+              "title": "Outline of Kya"
             }
           }
         ]
@@ -213,16 +213,26 @@
   },
   "active": "c9fb1d9d40cdb5cf",
   "lastOpenFiles": [
-    "Rada's Notes/Husasvm/Husasvm.md",
-    "Rada's Notes/Organization of the Notes.md",
-    "Rada's Notes/Husasvm",
-    "Rada's Notes/Vriksh/Vriksh.md",
-    "Rada's Notes/Vriksh",
     "Rada's Notes/Kim/Kim.md",
-    "Rada's Notes/Kim",
+    "Rada's Notes/Kim/Promises.md",
+    "Rada's Notes/Kim/Const.md",
+    "REPOSITORY_STRUCTURE.md",
+    "Rada's Notes/Kim/UnionTypes.md",
+    "Rada's Notes/Kya/SEARCH_TYPES_EXPLAINED.md",
     "Rada's Notes/Kya/Kya.md",
+    "Rada's Notes/Vriksh/Vriksh.md",
+    "Rada's Notes/Vriksh/REPOSITORY_STRUCTURE.md",
+    "Vriksh/REPOSITIORY_STRUCTURE.md",
+    "Vriksh",
+    "Vriksh/REPOSITIORY_STRUCTURE 1.md",
+    "CLAUDE.md",
+    "README.md",
+    "Rada's Notes/Organization of the Notes.md",
+    "Rada's Notes/Husasvm/Husasvm.md",
+    "Rada's Notes/Husasvm",
+    "Rada's Notes/Vriksh",
+    "Rada's Notes/Kim",
     "Rada's Notes/Kya",
-    "Rada's Notes",
-    "REPOSITORY_STRUCTURE.md"
+    "Rada's Notes"
   ]
 }
