@@ -1,0 +1,228 @@
+{
+  "main": {
+    "id": "7e1e2b0db59fd7fa",
+    "type": "split",
+    "children": [
+      {
+        "id": "3603de2a90bacd79",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3de32da0c4826157",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "REPOSITORY_STRUCTURE.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "REPOSITORY_STRUCTURE"
+            }
+          },
+          {
+            "id": "e7d2cb25cc32b0ab",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Rada's Notes/Organization of the Notes.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Organization of the Notes"
+            }
+          },
+          {
+            "id": "cd8ed9626a667569",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Rada's Notes/Organization of the Notes.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Organization of the Notes"
+            }
+          },
+          {
+            "id": "c9fb1d9d40cdb5cf",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Rada's Notes/Organization of the Notes.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Organization of the Notes"
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "7f048c6989e7db65",
+    "type": "split",
+    "children": [
+      {
+        "id": "6e7ff8e38a883a3c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d73ae01a6b731744",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "5ef293aa3de3b656",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "1ce6334802b5472d",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "19de03ffa6106caf",
+    "type": "split",
+    "children": [
+      {
+        "id": "2311043cea638646",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3360056d53c1aeb3",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Rada's Notes/Organization of the Notes.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Organization of the Notes"
+            }
+          },
+          {
+            "id": "a51d87e9cd75ff50",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Rada's Notes/Organization of the Notes.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Organization of the Notes"
+            }
+          },
+          {
+            "id": "743e3a08e25e1aef",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "b288d9859402c0a3",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Rada's Notes/Organization of the Notes.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Organization of the Notes"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "c9fb1d9d40cdb5cf",
+  "lastOpenFiles": [
+    "Rada's Notes/Husasvm/Husasvm.md",
+    "Rada's Notes/Organization of the Notes.md",
+    "Rada's Notes/Husasvm",
+    "Rada's Notes/Vriksh/Vriksh.md",
+    "Rada's Notes/Vriksh",
+    "Rada's Notes/Kim/Kim.md",
+    "Rada's Notes/Kim",
+    "Rada's Notes/Kya/Kya.md",
+    "Rada's Notes/Kya",
+    "Rada's Notes",
+    "REPOSITORY_STRUCTURE.md"
+  ]
+}
