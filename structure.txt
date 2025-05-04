@@ -1,0 +1,56 @@
+   . ├── app │   ├── api │   │   ├── advanced-search │   │   │   └──
+   route.ts │   │   └── chat │   │   └── route.ts │   ├── favicon.ico │
+   ├── globals.css │   ├── layout.tsx │   ├── opengraph-image.png │   ├──
+   page.tsx │   ├── search │   │   ├── [id] │   │   │   └── page.tsx │
+   │   └── page.tsx │   └── share │   └── [id] │   └── page.tsx ├──
+   bun.lockb ├── CODE_OF_CONDUCT.md ├── components │   ├──
+   answer-section.tsx │   ├── chat-messages.tsx │   ├── chat-panel.tsx │
+   ├── chat-share.tsx │   ├── chat.tsx │   ├── clear-history.tsx │   ├──
+   collapsible-message.tsx │   ├── custom-link.tsx │   ├──
+   default-skeleton.tsx │   ├── empty-screen.tsx │   ├── footer.tsx │
+   ├── header.tsx │   ├── history-container.tsx │   ├── history-item.tsx
+   │   ├── history-list.tsx │   ├── history-skeleton.tsx │   ├──
+   history.tsx │   ├── message-actions.tsx │   ├── message.tsx │   ├──
+   model-selector.tsx │   ├── mode-toggle.tsx │   ├──
+   reasoning-section.tsx │   ├── related-questions.tsx │   ├──
+   render-message.tsx │   ├── retrieve-section.tsx │   ├──
+   search-mode-toggle.tsx │   ├── search-results-image.tsx │   ├──
+   search-results.tsx │   ├── search-section.tsx │   ├── section.tsx │
+   ├── sidebar.tsx │   ├── theme-provider.tsx │   ├── tool-badge.tsx │
+   ├── tool-section.tsx │   ├── ui │   │   ├── alert-dialog.tsx │   │
+   ├── avatar.tsx │   │   ├── badge.tsx │   │   ├── button.tsx │   │   ├──
+   card.tsx │   │   ├── carousel.tsx │   │   ├── checkbox.tsx │   │   ├──
+   codeblock.tsx │   │   ├── collapsible.tsx │   │   ├── command.tsx │
+   │   ├── dialog.tsx │   │   ├── dropdown-menu.tsx │   │   ├── icons.tsx
+   │   │   ├── input.tsx │   │   ├── label.tsx │   │   ├── markdown.tsx
+   │   │   ├── popover.tsx │   │   ├── select.tsx │   │   ├──
+   separator.tsx │   │   ├── sheet.tsx │   │   ├── skeleton.tsx │   │
+   ├── slider.tsx │   │   ├── sonner.tsx │   │   ├── spinner.tsx │   │
+   ├── status-indicator.tsx │   │   ├── switch.tsx │   │   ├──
+   textarea.tsx │   │   ├── toggle.tsx │   │   └── tooltip.tsx │   ├──
+   user-message.tsx │   ├── video-search-results.tsx │   └──
+   video-search-section.tsx ├── components.json ├── CONTRIBUTING.md ├──
+   docker-compose.yaml ├── Dockerfile ├── docs │   └── CONFIGURATION.md
+   ├── lib │   ├── actions │   │   └── chat.ts │   ├── agents │   │   ├──
+   generate-related-questions.ts │   │   ├── manual-researcher.ts │   │
+   └── researcher.ts │   ├── config │   │   ├── default-models.json │
+   │   └── models.ts │   ├── constants │   │   └── index.ts │   ├── hooks
+   │   │   └── use-copy-to-clipboard.ts │   ├── redis │   │   └──
+   config.ts │   ├── schema │   │   ├── related.tsx │   │   ├──
+   retrieve.tsx │   │   └── search.tsx │   ├── streaming │   │   ├──
+   create-manual-tool-stream.ts │   │   ├── create-tool-calling-stream.ts
+   │   │   ├── handle-stream-finish.ts │   │   ├── parse-tool-call.ts │
+   │   ├── tool-execution.ts │   │   └── types.ts │   ├── tools │   │
+   ├── retrieve.ts │   │   ├── search.ts │   │   └── video-search.ts │
+   ├── types │   │   ├── index.ts │   │   └── models.ts │   └── utils │
+   ├── context-window.ts │   ├── cookies.ts │   ├── index.ts │   └──
+   registry.ts ├── LICENSE ├── middleware.ts ├── next.config.mjs ├──
+   package.json ├── postcss.config.mjs ├── prettier.config.js ├── public
+   │   ├── config │   │   └── models.json │   ├── images │   │   └──
+   placeholder-image.png │   ├── providers │   │   └── logos │   │   ├──
+   anthropic.svg │   │   ├── azure.svg │   │   ├── deepseek.svg │   │
+   ├── fireworks.svg │   │   ├── google.svg │   │   ├── groq.svg │   │
+   ├── ollama.svg │   │   ├── openai-compatible.svg │   │   ├── openai.svg
+   │   │   └── xai.svg │   └── screenshot-2025-01-31.png ├── README.md ├──
+   searxng-limiter.toml ├── searxng-settings.yml ├── structure.txt ├──
+   tailwind.config.ts └── tsconfig.json 28 directories, 135 files
