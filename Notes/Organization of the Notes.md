@@ -1,4 +1,4 @@
-[[Kya| Kya]] Notes delving into random topics related to the project, its design and its architecture
+[Kya?](Kya/Kya.md) Notes delving into random topics related to the project, its design and its architecture
 
 [[Kim| Kim]] Notes on random topics semi-related to the project, sometimes un-related
 
