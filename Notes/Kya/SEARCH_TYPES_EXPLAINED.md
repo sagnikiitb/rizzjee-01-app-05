@@ -208,7 +208,7 @@ Four independent search result item types exist without inheritance relationship
 
 ### Image Result Types
 
-1. **`SearchResultImage`**: [[Kim/UnionTypes | Union type]] for flexible image representation
+1. **`SearchResultImage`**: [[UnionTypes| Union type]] for flexible image representation
    ```typescript
    export type SearchResultImage =
      | string
