@@ -7,6 +7,9 @@ An AI-powered search engine with a generative UI.
 ## Go To Docs
 [Docs](Notes/Organization%20of%20the%20Notes.md)
 
+## Repository TREE
+[TREE](REPOSITORY_STRUCTURE.md)
+
 ## 🗂️ Overview
 
 - 🛠 [Features](#-features)
