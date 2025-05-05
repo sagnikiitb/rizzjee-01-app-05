@@ -4,6 +4,9 @@ An AI-powered search engine with a generative UI.
 
 ![capture](/public/screenshot-2025-01-31.png)
 
+## Go To Docs
+[Docs](Notes/Organization%20of%20the%20Notes.md)
+
 ## 🗂️ Overview
 
 - 🛠 [Features](#-features)
