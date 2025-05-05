@@ -57,7 +57,7 @@
       "toolCallType": "native"
     },
     {
-      "id": "gemini-2.0-flash",
+      "id": "gemini-2.0-flash-001",
       "name": "Gemini 2.0 Flash",
       "provider": "Google Generative AI",
       "providerId": "google",
@@ -71,7 +71,7 @@
       "providerId": "google",
       "enabled": true,
       "toolCallType": "manual",
-      "toolCallModel": "gemini-2.0-flash"
+      "toolCallModel": "gemini-2.0-flash-001"
     },
     {
       "id": "gemini-2.5-pro-exp-03-25",
@@ -80,7 +80,7 @@
       "providerId": "google",
       "enabled": true,
       "toolCallType": "manual",
-      "toolCallModel": "gemini-2.0-flash"
+      "toolCallModel": "gemini-2.0-flash-001"
     },
     {
       "id": "accounts/fireworks/models/deepseek-r1",
@@ -115,7 +115,7 @@
       "providerId": "groq",
       "enabled": true,
       "toolCallType": "manual",
-      "toolCallModel": "llama-3.1-8b-instant"
+      "toolCallModel": "gemini-2.0-flash-001"
     },
     {
       "id": "deepseek-r1",
@@ -138,6 +138,14 @@
     {
       "id": "grok-2-1212",
       "name": "Grok 2",
+      "provider": "xAI",
+      "providerId": "xai",
+      "enabled": true,
+      "toolCallType": "native"
+    },
+    {
+      "id": "grok-3-mini-beta",
+      "name": "Grok 3 Mini Beta",
       "provider": "xAI",
       "providerId": "xai",
       "enabled": true,

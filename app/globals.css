@@ -35,18 +35,21 @@
     --radius: 0.5rem;
 
     --chart-1: 12 76% 61%;
-
     --chart-2: 173 58% 39%;
-
     --chart-3: 197 37% 24%;
-
     --chart-4: 43 74% 66%;
-
     --chart-5: 27 87% 67%;
 
     --accent-blue: 210 100% 97%;
     --accent-blue-foreground: 210 100% 50%;
     --accent-blue-border: 210 100% 90%;
+
+    /* LaTeX Theme Variables - Light Mode */
+    --latex-block-bg: 0 0% 97%;
+    --latex-text: 0 0% 0%;
+    --latex-error-bg: 0 100% 97%;
+    --latex-error-border: 0 100% 90%;
+    --latex-error-text: 0 100% 45%;
   }
 
   .dark {
@@ -86,6 +89,13 @@
     --accent-blue: 210 100% 10%;
     --accent-blue-foreground: 210 100% 80%;
     --accent-blue-border: 210 100% 25%;
+
+    /* LaTeX Theme Variables - Dark Mode */
+    --latex-block-bg: 0 0% 10%;
+    --latex-text: 0 0% 90%;
+    --latex-error-bg: 0 50% 10%;
+    --latex-error-border: 0 50% 20%;
+    --latex-error-text: 0 100% 80%;
   }
 }
 
@@ -96,4 +106,77 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* LaTeX Styles */
+.math-content {
+  @apply text-base leading-relaxed;
+}
+
+.math-block {
+  @apply my-4 p-4 rounded-md overflow-x-auto;
+  background-color: hsl(var(--latex-block-bg));
+  color: hsl(var(--latex-text));
+}
+
+.math-inline {
+  @apply px-1;
+  color: hsl(var(--latex-text));
+}
+
+.katex-display {
+  @apply overflow-x-auto overflow-y-hidden py-2 my-2;
+}
+
+/* Prevent equation breaking on small screens */
+.katex-display > .katex {
+  @apply whitespace-normal;
+}
+
+/* Error display */
+.latex-error {
+  @apply rounded-md p-2 my-2;
+  background-color: hsl(var(--latex-error-bg));
+  border: 1px solid hsl(var(--latex-error-border));
+  color: hsl(var(--latex-error-text));
+}
+
+/* KaTeX specific adjustments */
+.katex {
+  font-size: 1.1em !important;
+  color: hsl(var(--latex-text));
+}
+
+/* Improve spacing for inline math */
+.katex-mathml {
+  @apply hidden;
+}
+
+/* Handle overflowing equations */
+.katex-html {
+  @apply overflow-x-auto overflow-y-hidden;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Improve readability of math symbols */
+.katex .mathdefault {
+  @apply font-normal;
+}
+
+/* LaTeX block with scrollbar */
+.math-block::-webkit-scrollbar {
+  @apply h-2 w-2;
+}
+
+.math-block::-webkit-scrollbar-track {
+  @apply bg-transparent rounded-full;
+}
+
+.math-block::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+
+.math-block::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
 }
