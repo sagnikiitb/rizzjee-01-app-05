@@ -2,18 +2,18 @@
 
 import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
+import { Mistral } from '@mistralai/mistralai'
 import { Message } from 'ai'
 import { ArrowUp, MessageCirclePlus, Paperclip, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
+import { toast } from 'sonner'
 import { EmptyScreen } from './empty-screen'
 import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
-import { toast } from 'sonner'
-import { Mistral } from '@mistralai/mistralai'
 
 interface ChatPanelProps {
   input: string
@@ -41,7 +41,7 @@ const LANGUAGES = [
   { label: 'Kannada', value: 'Kannada' },
   { label: 'Malayalam', value: 'Malayalam' },
   { label: 'Urdu', value: 'Urdu (اردو)' },
-  {label : 'Bengali', value: 'Bengali (বাংলা)' },
+  { label: 'Bengali', value: 'Bengali (বাংলা)' },
   { label: 'Odia', value: 'Odia (ଓଡ଼ିଆ)' },
   { label: 'Assamese', value: 'Assamese (অসমীয়া)' },
   { label: 'Maithili', value: 'Maithili' },
@@ -184,18 +184,18 @@ export function ChatPanel({
       })
 
       // Extract text from OCR response
-      const ocrText = ocrResponse.pages.map(page => page.markdown || page.text).join('\n\n')
+      const ocrText = ocrResponse.pages.map(page => page.markdown).join('\n\n')
 
       // Add the extracted text to the chat
       append({
         role: 'user',
         content: `[Uploaded document: ${file.name}]\n\n${ocrText}\n\nPlease answer in ${selectedLanguage} only.`
       })
-      
+
       toast.success('Document successfully processed!')
     } catch (error: any) {
       console.error('Error during OCR processing:', error)
-      
+
       // Add error message to chat
       append({
         role: 'user',
@@ -203,9 +203,11 @@ export function ChatPanel({
       })
       append({
         role: 'system',
-        content: `OCR failed: ${error?.message || 'Unknown error processing document'}`
+        content: `OCR failed: ${
+          error?.message || 'Unknown error processing document'
+        }`
       })
-      
+
       toast.error(
         error instanceof Error ? error.message : 'Failed to process document'
       )
