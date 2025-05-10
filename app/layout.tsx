@@ -2,6 +2,7 @@ import Footer from '@/components/footer'
 import Header from '@/components/header'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { NavigationSidebar } from '@/components/navigation-sidebar'
 import { cn } from '@/lib/utils'
 import type { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
@@ -41,12 +42,17 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn('font-sans antialiased', fontSans.variable)}>
+      <body
+        className={cn(
+          'min-h-screen font-sans antialiased',
+          fontSans.variable
+        )}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -54,6 +60,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
+          <NavigationSidebar />
           {children}
           <Footer />
           <Toaster />
