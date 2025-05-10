@@ -3,20 +3,20 @@ import { ArrowRight } from 'lucide-react'
 
 const exampleMessages = [
   {
-    heading: 'What is DeepSeek R1?',
-    message: 'What is DeepSeek R1?'
+    heading: 'What is the best strategy to solve complex Physics problems?',
+    message: 'What is the best strategy to solve complex Physics problems?'
   },
   {
-    heading: 'Why is Nvidia growing rapidly?',
-    message: 'Why is Nvidia growing rapidly?'
+    heading: 'Which books and resources are best for JEE preparation?',
+    message: 'Which books and resources are best for JEE preparation?'
   },
   {
-    heading: 'Tesla vs Rivian',
-    message: 'Tesla vs Rivian'
+    heading: 'What is the smartest way to manage my daily study schedule?',
+    message: 'What is the smartest way to manage my daily study schedule?'
   },
   {
-    heading: 'Summary: https://arxiv.org/pdf/2501.05707',
-    message: 'Summary: https://arxiv.org/pdf/2501.05707'
+    heading: 'What are the most common mistakes to avoid in the JEE exam?',
+    message: 'What are the most common mistakes to avoid in the JEE exam?'
   }
 ]
 export function EmptyScreen({
