@@ -7,6 +7,8 @@ import { cn } from '@/lib/utils'
 import type { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 import './globals.css'
+import { AuthProvider } from '@/lib/context/auth-context'
+import { AuthButtons } from '@/components/auth/auth-buttons'
 
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -59,11 +61,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Header />
-          <NavigationSidebar />
-          {children}
-          <Footer />
-          <Toaster />
+          <AuthProvider>
+            <Header />
+            <NavigationSidebar />
+            {children}
+            <AuthButtons />
+            <Footer />
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
