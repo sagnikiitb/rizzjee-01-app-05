@@ -20,6 +20,11 @@ const navigationItems = [
     name: 'Physics Simulations',
     href: '/simulations',
     icon: Atom
+  },
+  {
+    name: 'About Exams',
+    href: '/about-exams',
+    icon: Book
   }
 ]
 
