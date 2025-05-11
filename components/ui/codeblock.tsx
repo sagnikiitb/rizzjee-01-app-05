@@ -98,91 +98,96 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
     
     setIsGenerating(true);
     setGraphError(null);
+    setGraphVisible(false); // Reset graph visibility
     
     try {
-      // Load Plotly if it's not already loaded
-      if (!window.Plotly) {
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.plot.ly/plotly-latest.min.js';
-          script.onload = resolve;
-          script.onerror = reject;
-          document.head.appendChild(script);
-        });
-      }
+      // Create a safe execution environment
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
       
-      // Extract the plotly figure more directly
-      const extractFigure = `
-        // Helper function to find Plotly figures in the global scope
-        function findPlotlyFigures() {
-          const figures = [];
-          for (const key in window) {
-            try {
-              const obj = window[key];
-              if (obj && 
-                  typeof obj === 'object' && 
-                  Array.isArray(obj.data) &&
-                  obj.data.length > 0) {
-                figures.push({ name: key, figure: obj });
-              }
-            } catch (e) {
-              // Skip any objects that throw errors when accessed
-              continue;
-            }
-          }
-          return figures;
+      try {
+        // Load Plotly if it's not already loaded
+        if (!window.Plotly) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            // Use a specific version of Plotly instead of "latest"
+            script.src = 'https://cdn.plot.ly/plotly-2.27.1.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
         }
-
-        // Store initial state
-        const initialFigures = findPlotlyFigures();
-        const initialKeys = Object.keys(window);
-        
-        // Execute the user code
+      
+      // Modified code to simplify Plotly execution
+      const pythonToJs = `
         try {
-          ${value}
-          
-          // Find new figures that appeared after execution
-          const newFigures = findPlotlyFigures().filter(fig => 
-            !initialFigures.some(initial => initial.name === fig.name)
-          );
-          
-          // Find new global variables that might be figures
-          const newVars = Object.keys(window).filter(key => !initialKeys.includes(key));
-          for (const key of newVars) {
-            try {
-              const obj = window[key];
-              if (obj && 
-                  typeof obj === 'object' && 
-                  Array.isArray(obj.data) &&
-                  obj.data.length > 0) {
-                newFigures.push({ name: key, figure: obj });
-              }
-            } catch (e) {
-              continue;
+          // Redirect Python imports to show more helpful messages
+          const originalDefineProperty = Object.defineProperty;
+          Object.defineProperty = function(obj, prop, descriptor) {
+            if (prop === 'numpy' || prop === 'np' || prop === 'pandas' || prop === 'pd') {
+              throw new Error('Python libraries like ${prop} are not available in the browser environment.');
             }
-          }
-          
-          // If we found figures, return the last one (most likely the one created last)
-          if (newFigures.length > 0) {
-            window.parent.postMessage({ 
-              success: true, 
-              figure: newFigures[newFigures.length - 1].figure 
-            }, '*');
-          } else {
-            // If no new figures were created, look for common figure names
-            const commonNames = ['fig', 'figure', 'plt_fig', 'plot_fig', 'plotly_fig'];
-            for (const name of commonNames) {
-              if (window[name] && typeof window[name] === 'object' && Array.isArray(window[name].data)) {
-                window.parent.postMessage({ success: true, figure: window[name] }, '*');
-                return;
+            return originalDefineProperty(obj, prop, descriptor);
+          };
+
+          // Execute code with careful error catching
+          (() => {
+            // Common Plotly names to reference first
+            window.fig = null;
+            window.figure = null;
+            window.plt = { figure: () => {} };
+            
+            // Execute user code, replacing common Python functions with JavaScript equivalents
+            let jsCode = \`${value.replace(/'/g, "\\'")}
+            
+            // Add a safe ending to make sure we have a figure
+            if (typeof fig !== "undefined") { window.activeFigure = fig; }
+            else if (typeof figure !== "undefined") { window.activeFigure = figure; }\`;
+            
+            // Replace common Python patterns
+            jsCode = jsCode
+              .replace(/import numpy as np/g, '// import numpy as np')
+              .replace(/import pandas as pd/g, '// import pandas as pd')
+              .replace(/import plotly/g, '// import plotly')
+              .replace(/import plotly.express as px/g, '// import plotly.express as px')
+              .replace(/from plotly/g, '// from plotly')
+              .replace(/plt.figure\(/g, 'window.fig = {}; window.activeFigure = window.fig; window.plt.figure(')
+              .replace(/px\./g, 'Plotly.newPlot(')
+              .replace(/np\./g, 'Math.')
+              .replace(/\.show\(\)/g, '; window.activeFigure = fig;')
+              .replace(/print\(/g, 'console.log(');
+            
+            eval(jsCode);
+            
+            // Find Plotly figure objects after execution
+            for (const key in window) {
+              if (key !== 'Plotly' && typeof window[key] === 'object' && window[key] !== null) {
+                try {
+                  const obj = window[key];
+                  if (Array.isArray(obj.data) && obj.data.length > 0) {
+                    window.activeFigure = obj;
+                    break;
+                  }
+                } catch (e) {
+                  // Skip objects that cause errors
+                }
               }
             }
-            window.parent.postMessage({ 
-              error: 'No Plotly figure was created by this code' 
-            }, '*');
-          }
+            
+            if (window.activeFigure && Array.isArray(window.activeFigure.data)) {
+              window.parent.postMessage({ 
+                success: true, 
+                figure: window.activeFigure 
+              }, '*');
+            } else {
+              throw new Error('No Plotly figure found. Make sure your code creates a Plotly figure object.');
+            }
+          })();
         } catch (e) {
-          window.parent.postMessage({ error: e.message }, '*');
+          window.parent.postMessage({ 
+            error: e.message || 'Unknown error in code execution'
+          }, '*');
         }
       `;
       
@@ -218,11 +223,11 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
             
             // Load Plotly in the iframe
             const plotlyScript = iframeDoc.createElement('script');
-            plotlyScript.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+            plotlyScript.src = 'https://cdn.plot.ly/plotly-2.27.1.min.js';
             plotlyScript.onload = () => {
               // Once Plotly is loaded, run the extraction code
               const script = iframeDoc.createElement('script');
-              script.textContent = extractFigure;
+              script.textContent = pythonToJs;
               iframeDoc.body.appendChild(script);
             };
             
@@ -238,13 +243,15 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
         )
       ]);
       
-      // Clean up iframe
-      try {
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
+      } finally {
+        // Clean up iframe
+        try {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        } catch (e) {
+          console.error('Error removing iframe:', e);
         }
-      } catch (e) {
-        console.error('Error removing iframe:', e);
       }
       
       // Render the figure
@@ -360,8 +367,9 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
                 Tips:
                 <ul className="list-disc pl-5 mt-1">
                   <li>Ensure your code creates a Plotly figure (named &apos;fig&apos;, &apos;figure&apos;, etc.)</li>
-                  <li>Check for syntax errors in your Python code</li>
-                  <li>Make sure imports and data are properly defined</li>
+                  <li>Try simplifying your code - remove complex calculations or large datasets</li>
+                  <li>Python libraries like numpy and pandas are not available - focus on the Plotly visualization part</li>
+                  <li>Keep only the essential code needed to generate the graph</li>
                 </ul>
               </div>
             </div>
