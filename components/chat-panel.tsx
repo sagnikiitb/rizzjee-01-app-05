@@ -2,11 +2,13 @@
 
 import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
+import { Mistral } from '@mistralai/mistralai'
 import { Message } from 'ai'
-import { ArrowUp, MessageCirclePlus, Square } from 'lucide-react'
+import { ArrowUp, MessageCirclePlus, Paperclip, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
+import { toast } from 'sonner'
 import { EmptyScreen } from './empty-screen'
 import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
@@ -26,6 +28,30 @@ interface ChatPanelProps {
   models?: Model[]
 }
 
+const LANGUAGES = [
+  { label: 'Hinglish', value: 'Hinglish' },
+  { label: 'English', value: 'English' },
+  { label: 'Hindi', value: 'Hindi (देवनागरी)' },
+  { label: 'Bhojpuri', value: 'Bhojpuri' },
+  { label: 'Punjabi', value: 'Punjabi' },
+  { label: 'Marathi', value: 'Marathi' },
+  { label: 'Gujarati', value: 'Gujarati' },
+  { label: 'Tamil', value: 'Tamil' },
+  { label: 'Telugu', value: 'Telugu' },
+  { label: 'Kannada', value: 'Kannada' },
+  { label: 'Malayalam', value: 'Malayalam' },
+  { label: 'Urdu', value: 'Urdu (اردو)' },
+  { label: 'Bengali', value: 'Bengali (বাংলা)' },
+  { label: 'Odia', value: 'Odia (ଓଡ଼ିଆ)' },
+  { label: 'Assamese', value: 'Assamese (অসমীয়া)' },
+  { label: 'Maithili', value: 'Maithili' },
+  { label: 'Dogri', value: 'Dogri' },
+  { label: 'Kashmiri', value: 'Kashmiri (کٕشمیری)' },
+  { label: 'Manipuri', value: 'Manipuri (মণিপুরী)' },
+  { label: 'Santali', value: 'Santali (ᱥᱟᱱᱛᱟᱲᱤ)' },
+  { label: 'Sindhi', value: 'Sindhi (سنڌي)' }
+]
+
 export function ChatPanel({
   input,
   handleInputChange,
@@ -42,8 +68,11 @@ export function ChatPanel({
   const router = useRouter()
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const isFirstRender = useRef(true)
-  const [isComposing, setIsComposing] = useState(false) // Composition state
-  const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
+  const [isComposing, setIsComposing] = useState(false)
+  const [enterDisabled, setEnterDisabled] = useState(false)
+  const [selectedLanguage, setSelectedLanguage] = useState('Hinglish')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleCompositionStart = () => setIsComposing(true)
 
@@ -65,12 +94,128 @@ export function ChatPanel({
     if (isFirstRender.current && query && query.trim().length > 0) {
       append({
         role: 'user',
-        content: query
+        content: `${query}\n\nPlease answer in ${selectedLanguage} only.`
       })
       isFirstRender.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
+
+  // Custom handleSubmit to append language instruction
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (input.trim().length === 0) return
+    append({
+      role: 'user',
+      content: `${input}\n\nPlease answer in ${selectedLanguage} only.`
+    })
+    handleInputChange({
+      target: { value: '' }
+    } as React.ChangeEvent<HTMLTextAreaElement>)
+  }
+
+  // Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        const base64String = reader.result as string
+        resolve(base64String)
+      }
+      reader.onerror = error => {
+        reject(error)
+      }
+    })
+  }
+
+  // OCR Upload handlers
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '' // Clear any previous selection
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+
+    try {
+      // Validate file type
+      const validTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/jpg',
+        'application/pdf'
+      ]
+      if (!validTypes.includes(file.type)) {
+        throw new Error('Please upload a PDF or image file (JPEG/PNG).')
+      }
+
+      // Validate file size (e.g., 10MB limit)
+      const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+      if (file.size > MAX_SIZE) {
+        throw new Error('File too large. Maximum size is 10MB.')
+      }
+
+      // Get API key
+      const apiKey = process.env.NEXT_PUBLIC_MISTRAL_API_KEY
+      if (!apiKey) {
+        throw new Error('Mistral API key not found in environment variables.')
+      }
+
+      // Convert file to base64 data URL
+      const dataUrl = await fileToBase64(file)
+
+      // Create Mistral client
+      const client = new Mistral({ apiKey })
+
+      // Process OCR directly using the Mistral client
+      const ocrResponse = await client.ocr.process({
+        model: 'mistral-ocr-latest',
+        document: {
+          type: 'document_url',
+          documentUrl: dataUrl
+        },
+        includeImageBase64: false
+      })
+
+      // Extract text from OCR response
+      const ocrText = ocrResponse.pages.map(page => page.markdown).join('\n\n')
+
+      // Add the extracted text to the chat
+      append({
+        role: 'user',
+        content: `[Uploaded document: ${file.name}]\n\n${ocrText}\n\nPlease answer in ${selectedLanguage} only.`
+      })
+
+      toast.success('Document successfully processed!')
+    } catch (error: any) {
+      console.error('Error during OCR processing:', error)
+
+      // Add error message to chat
+      append({
+        role: 'user',
+        content: `[Attempted to upload: ${file.name}]`
+      })
+      append({
+        role: 'system',
+        content: `OCR failed: ${
+          error?.message || 'Unknown error processing document'
+        }`
+      })
+
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to process document'
+      )
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   return (
     <div
@@ -90,13 +235,31 @@ export function ChatPanel({
         </div>
       )}
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleFormSubmit}
         className={cn(
           'max-w-3xl w-full mx-auto',
           messages.length > 0 ? 'px-2 pb-4' : 'px-6'
         )}
       >
         <div className="relative flex flex-col w-full gap-2 bg-muted rounded-3xl border border-input">
+          {/* Language Selector */}
+          <div className="flex items-center gap-2 px-4 pt-4">
+            <label htmlFor="language-select" className="text-sm font-medium">
+              Language:
+            </label>
+            <select
+              id="language-select"
+              value={selectedLanguage}
+              onChange={e => setSelectedLanguage(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              {LANGUAGES.map(lang => (
+                <option key={lang.value} value={lang.value}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <Textarea
             ref={inputRef}
             name="input"
@@ -140,6 +303,30 @@ export function ChatPanel({
               <SearchModeToggle />
             </div>
             <div className="flex items-center gap-2">
+              {/* OCR Upload Button */}
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="rounded-full"
+                onClick={handleUploadClick}
+                disabled={uploading}
+                title="Upload photo or PDF for OCR"
+              >
+                {uploading ? (
+                  <span className="animate-pulse text-xs">...</span>
+                ) : (
+                  <Paperclip size={20} />
+                )}
+              </Button>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                style={{ display: 'none' }}
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                disabled={uploading}
+              />
               {messages.length > 0 && (
                 <Button
                   variant="outline"
