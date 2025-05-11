@@ -146,6 +146,11 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       // Execute the code in the iframe context
       const figure = await new Promise((resolve, reject) => {
         try {
+          // Add null checks for TypeScript
+          if (!iframe.contentWindow) {
+            throw new Error('Could not access iframe content window');
+          }
+          
           const iframeDoc = iframe.contentWindow.document;
           const script = iframeDoc.createElement('script');
           script.textContent = `
@@ -156,10 +161,10 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
             }
           `;
           
-          const handleMessage = (event) => {
-            if (event.data.error) {
+          const handleMessage = (event: MessageEvent) => {
+            if (event.data && event.data.error) {
               reject(new Error(event.data.error));
-            } else if (event.data.figure) {
+            } else if (event.data && event.data.figure) {
               resolve(event.data.figure);
             }
           };
