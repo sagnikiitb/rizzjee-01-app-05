@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { Home, Book, Atom } from 'lucide-react'
+import { Home, Book, Atom, Paperclip } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -24,7 +24,7 @@ const navigationItems = [
   {
     name: 'About Exams',
     href: '/about-exams',
-    icon: Book
+    icon: Paperclip
   }
 ]
 
