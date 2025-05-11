@@ -194,9 +194,19 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       } else {
         throw new Error('Failed to generate Plotly graph');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Graph generation error:', error);
-      setGraphError(error.message || 'Failed to generate the graph');
+      let errorMessage = 'Failed to generate the graph';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      }
+      
+      setGraphError(errorMessage);
     } finally {
       setIsGenerating(false);
     }
