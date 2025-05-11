@@ -9,6 +9,7 @@ import { xai } from '@ai-sdk/xai'
 import {
   experimental_createProviderRegistry as createProviderRegistry,
   extractReasoningMiddleware,
+  LanguageModelV1,
   wrapLanguageModel
 } from 'ai'
 import { createOllama } from 'ollama-ai-provider'
@@ -39,9 +40,10 @@ export const registry = createProviderRegistry({
   xai
 })
 
-export function getModel(model: string) {
+export function getModel(model: string): LanguageModelV1 {
   const [provider, ...modelNameParts] = model.split(':') ?? []
   const modelName = modelNameParts.join(':')
+
   if (model.includes('ollama')) {
     const ollama = createOllama({
       baseURL: `${process.env.OLLAMA_BASE_URL}/api`
@@ -83,7 +85,8 @@ export function getModel(model: string) {
     })
   }
 
-  return registry.languageModel(model)
+  // Type assertion to handle the type checking issue
+  return registry.languageModel(model as any) as LanguageModelV1
 }
 
 export function isProviderEnabled(providerId: string): boolean {
