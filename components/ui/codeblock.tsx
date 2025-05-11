@@ -51,6 +51,11 @@ declare global {
   }
 }
 
+interface PlotlyFigure {
+  data: any[];
+  layout?: Record<string, any>;
+}
+
 const CodeBlock: FC<Props> = memo(({ language, value }) => {
   const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 })
   const [graphVisible, setGraphVisible] = useState(false)
@@ -144,7 +149,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       document.body.appendChild(iframe);
       
       // Execute the code in the iframe context
-      const figure = await new Promise((resolve, reject) => {
+      const figure = await new Promise<PlotlyFigure | null>((resolve, reject) => {
         try {
           // Add null checks for TypeScript
           if (!iframe.contentWindow) {
@@ -183,8 +188,8 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       document.body.removeChild(iframe);
       
       // Render the figure
-      if (figure) {
-        window.Plotly.newPlot(graphId, figure.data, figure.layout);
+      if (figure && figure.data) {
+        window.Plotly.newPlot(graphId, figure.data, figure.layout || {});
         setGraphVisible(true);
       } else {
         throw new Error('Failed to generate Plotly graph');
