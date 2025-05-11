@@ -1,244 +1,18 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import 'katex/dist/katex.min.css'
 import rehypeExternalLinks from 'rehype-external-links'
 import rehypeKatex from 'rehype-katex'
+import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import { Components } from 'react-markdown'
 import { Citing } from './custom-link'
 import { CodeBlock } from './ui/codeblock'
 import { MemoizedReactMarkdown } from './ui/markdown'
-import { ReactNode } from 'react'
 import { DetailedHTMLProps, HTMLAttributes } from 'react'
-
-
-// Common mathematical patterns in plaintext
-const MATH_PATTERNS = {
-  fractions: /(\d+)\/(\d+)/g,
-  exponents: /(\w+)\^(\d+|\{\w+\})/g,
-  squareRoot: /sqrt\(([^)]+)\)/g,
-  subscripts: /(\w+)_(\d+|\{\w+\})/g,
-  plusMinus: /\+\-/g,
-  multiplicationDot: /(\d+|\})\s*\*\s*(\d+|\{)/g,
-  greekLetters: {
-    alpha: /\balpha\b/g,
-    beta: /\bbeta\b/g,
-    gamma: /\bgamma\b/g,
-    delta: /\bdelta\b/g,
-    theta: /\btheta\b/g,
-    pi: /\bpi\b/g,
-    sigma: /\bsigma\b/g,
-    omega: /\bomega\b/g,
-    lambda: /\blambda\b/g,
-    zeta: /\bzeta\b/g,
-    tau: /\btau\b/g,
-
-
-
-    // Add more Greek letters as needed
-  }
-}
-
-// Convert plaintext math to LaTeX
-const convertPlainTextToLaTeX = (text: string): string => {
-  // Handle fractions
-  text = text.replace(MATH_PATTERNS.fractions, '\\frac{$1}{$2}')
-
-  // Handle exponents
-  text = text.replace(MATH_PATTERNS.exponents, '{$1}^{$2}')
-
-  // Handle square roots
-  text = text.replace(MATH_PATTERNS.squareRoot, '\\sqrt{$1}')
-
-  // Handle subscripts
-  text = text.replace(MATH_PATTERNS.subscripts, '{$1}_{$2}')
-
-  // Handle plus-minus
-  text = text.replace(MATH_PATTERNS.plusMinus, '\\pm ')
-
-  // Handle multiplication dot
-  text = text.replace(MATH_PATTERNS.multiplicationDot, '$1 \\cdot $2')
-
-  // Handle Greek letters
-  Object.entries(MATH_PATTERNS.greekLetters).forEach(([letter, pattern]) => {
-    text = text.replace(pattern, `\\${letter}`)
-  })
-
-  return text
-}
-
-
-
-// Enhanced preprocessing function
-const preprocessMath = (content: string): string => {
-  if (!content) return ''
-
-  // First handle Markdown-style math
-  //let processedContent = convertMarkdownToLaTeX(content)
-  //Simplify
-  let processedContent = content
-  // Look for potential plaintext math expressions
-  const plainTextMathRegex = /([^$\\\n])([\d\w]+[\/\^_\*][\d\w]+|sqrt\([^)]+\)|\b(alpha|beta|gamma|delta|theta|pi|sigma|omega|lambda|zeta|tau)\b)/g;
-  const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+|\S+\.(com|org|edu|co|in|io|net|gov|mil|us|uk|ca|au|de|fr|jp|ru|cn|br|it|nl|se|no|fi|dk|pl|ch|at|be|es|pt|gr|cz|hu|ro|nz|ie|il|za|ar|mx|cl|pe|co|ve|sg|my|ph|vn|sa|ae|eg|pk|ng)(?:\/[^\s]*)?/i;
-  processedContent = processedContent.replace(plainTextMathRegex, (match, pre, expr) => {
-    // Don't convert if it's already part of a LaTeX expression or if it's a URL
-    if (pre.endsWith('\\') || pre.endsWith('$')) return match
-    // Check if this potential math expression is part of a URL
-    const testString = pre + expr;
-    if (urlRegex.test(testString)) {
-        return match; // It's part of a URL, don't convert
-        }
-          
-    return `${pre}\\(${convertPlainTextToLaTeX(expr)}\\)`
-  })
-
-  // Handle existing LaTeX expressions
-  processedContent = processedContent
-    // Handle display math
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_, equation) => `\n$$${equation.trim()}$$\n`)
-    // Handle inline math
-    .replace(/\\\(([\s\S]*?)\\\)/g, (_, equation) => `$${equation.trim()}$`)
-    // Handle align environments
-    .replace(/\\begin{align\*?}/g, '\\begin{aligned}')
-    .replace(/\\end{align\*?}/g, '\\end{aligned}')
-    // Normalize spacing
-    .replace(/([^$])\$\$/g, '$1\n$$')
-    .replace(/\$\$([^$])/g, '$$\n$1')
-    .replace(/([^$])\$([^$])/g, '$1 $ $2')
-
-  return processedContent
-}
-
-// Enhanced math detection
-const containsMath = (content: string): boolean => {
-  if (!content) return false
-
-  const patterns = [
-    /\\\[([\s\S]*?)\\\]/,          // Display math
-    /\\\(([\s\S]*?)\\\)/,          // Inline math
-    /\$\$([\s\S]*?)\$\$/,          // Display math with $$
-    /\$[^$\n]+\$/,                 // Inline math with single $
-    /\\begin\{[^}]+\}/,            // Environment blocks
-    /```math/,                      // Markdown math blocks
-    /`\$[^`]+\$`/,                 // Markdown inline math
-    /(\d+)\/(\d+)/,                // Fractions
-    /(\w+)\^(\d+|\{\w+\})/,        // Exponents
-    /sqrt\([^)]+\)/,               // Square roots
-    /(\w+)_(\d+|\{\w+\})/,         // Subscripts
-    /\b(alpha|beta|gamma|delta|theta|pi|sigma|omega)\b/ // Greek letters
-  ]
-
-  return patterns.some(pattern => pattern.test(content))
-}
-//Scissor start
-type CodeComponentProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
-  node?: any
-  inline?: boolean
-  className?: string
-  children?: React.ReactNode
-}
-
-export function BotMessage({
-  message,
-  className
-}: {
-  message: string
-  className?: string
-}) {
-  const hasMath = containsMath(message || '')
-  const processedContent = hasMath ? preprocessMath(message || '') : message
-
-  const CodeComponent = ({ node, inline, className, children, ...props }: CodeComponentProps) => {
-       if (children && Array.isArray(children) && children.length > 0) {
-      if (children[0] === '▍') {
-        return (
-          <span className="mt-1 cursor-default animate-pulse">▍</span>
-        )
-      }
-      if (typeof children[0] === 'string') {
-        children[0] = children[0].replace('`▍`', '▍')
-      }
-    }
-
-    const match = /language-(\w+)/.exec(className || '')
-    
-    // Handle math blocks
-    if (match && match[1] === 'math') {
-      return (
-        <div className="math-block my-2 overflow-x-auto">
-          {String(children).replace(/\n$/, '')}
-        </div>
-      )
-    }
-
-    // Handle inline math
-    if (inline && 
-        typeof children === 'string' && 
-        children.startsWith('$') && 
-        children.endsWith('$')) {
-      const mathContent = children.slice(1, -1)
-      return (
-        <span className="math-inline">
-          {mathContent}
-        </span>
-      )
-    }
-
-    // Default inline code handling
-    if (inline) {
-      return (
-        <code className={className} {...props}>
-          {children}
-        </code>
-      )
-    }
-
-    // Default code block handling
-    return (
-      <CodeBlock
-        key={Math.random()}
-        language={(match && match[1]) || ''}
-        value={String(children).replace(/\n$/, '')}
-        {...props}
-      />
-    )
-    // [Rest of the CodeComponent implementation remains the same]
-  }
-
-  return (
-    <LaTeXErrorBoundary>
-      <MemoizedReactMarkdown
-        rehypePlugins={[
-          [rehypeExternalLinks, { target: '_blank' }],
-          [rehypeKatex, {
-            strict: false,
-            trust: true,
-            throwOnError: false,
-            maxSize: 500,
-            maxExpand: 1000,
-            minRuleThickness: 0.05
-          }]
-        ]}
-        remarkPlugins={[remarkGfm, remarkMath]}
-        className={cn(
-          'prose-sm prose-neutral prose-a:text-accent-foreground/50',
-          'math-content',
-          className
-        )}
-        components={{
-          code: CodeComponent as Components['code'],
-          a: Citing
-        }}
-      >
-        {processedContent}
-      </MemoizedReactMarkdown>
-    </LaTeXErrorBoundary>
-  )
-}
-
-
 
 // Error boundary component
 const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
@@ -254,4 +28,196 @@ const LaTeXErrorBoundary = ({ children }: { children: React.ReactNode }) => {
   }
 }
 
-//Scissor end
+// URL detection regex - detects complete URLs 
+const URL_REGEX = /(https?:\/\/[^\s]+)/g
+const YOUTUBE_URL_REGEX = /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=)?([a-zA-Z0-9_-]{11})/
+
+// Function to convert YouTube URL to embed URL
+const getYouTubeEmbedUrl = (url: string) => {
+  const match = url.match(YOUTUBE_URL_REGEX)
+  if (match) {
+    // Extract the video ID
+    const videoId = match[4]
+    return `https://www.youtube.com/embed/${videoId}`
+  }
+  return url
+}
+
+// Function to check if URL is an image
+const isImageUrl = (url: string) => {
+  return /\.(png|jpe?g|gif|svg|webp)(\?.*)?$/i.test(url)
+}
+
+type CodeComponentProps = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & {
+  node?: any
+  inline?: boolean
+  className?: string
+  children?: React.ReactNode
+}
+
+export function BotMessage({
+  message,
+  className
+}: {
+  message: string
+  className?: string
+}) {
+  // State to track rendered SVGs for matplotlib code
+  const [renderedCode, setRenderedCode] = useState<Record<string, string>>({})
+
+  // Process code snippets that contain matplotlib content
+  useEffect(() => {
+    // Find Python code blocks that use matplotlib
+    const pythonMatplotlibRegex = /```(?:python|py)\n([\s\S]*?matplotlib[\s\S]*?)```/g
+    let match
+    
+    const processMatplotlibCode = async () => {
+      const newRenderedCode: Record<string, string> = {}
+      
+      // Find all matches in the content
+      while ((match = pythonMatplotlibRegex.exec(message)) !== null) {
+        const code = match[1]
+        const codeKey = code.slice(0, 50) // Use first 50 chars as a key
+        
+        try {
+          // Call backend service to convert matplotlib code to SVG
+          const response = await fetch('/api/rizzjee-starplot', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code }),
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            newRenderedCode[codeKey] = data.svg
+          }
+        } catch (error) {
+          console.error('Error rendering matplotlib code:', error)
+        }
+      }
+      
+      if (Object.keys(newRenderedCode).length > 0) {
+        setRenderedCode(newRenderedCode)
+      }
+    }
+    
+    if (message && message.includes('matplotlib')) {
+      processMatplotlibCode()
+    }
+  }, [message])
+  
+  // Custom component for rendering code blocks
+  const CodeComponent = ({ node, inline, className, children, ...props }: CodeComponentProps) => {
+    const match = /language-(\w+)/.exec(className || '')
+    const language = match && match[1] ? match[1] : ''
+    const code = String(children).replace(/\n$/, '')
+    
+    // Check if this is a matplotlib code block that we've rendered
+    if (language === 'python' || language === 'py') {
+      if (code.includes('matplotlib')) {
+        const codeKey = code.slice(0, 50) // Same key generation as in useEffect
+        const svgContent = renderedCode[codeKey]
+        
+        if (svgContent) {
+          // Return the rendered SVG instead of the code block
+          return (
+            <div className="matplotlib-output" dangerouslySetInnerHTML={{ __html: svgContent }} />
+          )
+        }
+      }
+    }
+    
+    // For all other code blocks, use the default CodeBlock component
+    if (!inline && match) {
+      return (
+        <CodeBlock
+          key={Math.random()}
+          language={language}
+          value={code}
+          {...props}
+        />
+      )
+    }
+    
+    return inline ? (
+      <code className={className} {...props}>
+        {children}
+      </code>
+    ) : (
+      <CodeBlock
+        key={Math.random()}
+        language={'text'}
+        value={code}
+        {...props}
+      />
+    )
+  }
+  
+  // Custom component for links - handles YouTube and image embeds
+  const LinkComponent = ({ href, children, ...props }: any) => {
+    if (!href) return <a {...props}>{children}</a>
+
+    // Check if this is a YouTube URL
+    if (YOUTUBE_URL_REGEX.test(href)) {
+      const embedUrl = getYouTubeEmbedUrl(href)
+      return (
+        <div className="youtube-embed">
+          <iframe 
+            width="100%" 
+            height="315" 
+            src={embedUrl} 
+            frameBorder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowFullScreen 
+            title="Embedded YouTube video"
+          />
+        </div>
+      )
+    }
+    
+    // Check if this is an image URL
+    if (isImageUrl(href)) {
+      return (
+        <div className="image-embed">
+          <img src={href} alt={String(children) || "Embedded image"} style={{ maxWidth: '100%' }} />
+        </div>
+      )
+    }
+    
+    // Default link rendering
+    return <Citing href={href} {...props}>{children}</Citing>
+  }
+
+  return (
+    <LaTeXErrorBoundary>
+      <MemoizedReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[
+          rehypeRaw,
+          [rehypeExternalLinks, { target: '_blank' }],
+          [rehypeKatex, {
+            strict: false,
+            trust: true,
+            throwOnError: false,
+            maxSize: 500,
+            maxExpand: 1000,
+            minRuleThickness: 0.05
+          }]
+        ]}
+        className={cn(
+          'prose-sm prose-neutral prose-a:text-accent-foreground/50',
+          'math-content',
+          className
+        )}
+        components={{
+          code: CodeComponent as Components['code'],
+          a: LinkComponent as Components['a']
+        }}
+      >
+        {message}
+      </MemoizedReactMarkdown>
+    </LaTeXErrorBoundary>
+  )
+}
