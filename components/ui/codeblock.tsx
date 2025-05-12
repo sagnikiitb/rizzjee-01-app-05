@@ -302,7 +302,7 @@ result
       addLog(`Raw Result : ${rawResult}`);
       const codetoPy =  pyodide.toPy(rawResult);
       addLog(`Code Py : ${codetoPy}`);
-      const codetoJs = codetoPy.toJs();
+      const codetoJs = pyodide.toJs();
       addLog(`Code Js : ${codetoJs}`);
       return codetoJs;
     } catch (error: any) {
