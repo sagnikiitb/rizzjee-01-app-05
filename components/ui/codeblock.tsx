@@ -344,7 +344,8 @@ function processFigure(figureObj: any): any {
   
   function executionFunction(): any {
     try{
-      const rawResult = await pyodide.runPythonAsync(extractorCode);
+      //const rawResult = await pyodide.runPythonAsync(extractorCode);
+      const rawResult = pyodide.runPythonAsync(extractorCode);
       addLog(`Raw Result : ${rawResult}`);
       return rawResult;
     }
