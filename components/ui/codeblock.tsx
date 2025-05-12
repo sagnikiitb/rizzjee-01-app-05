@@ -319,10 +319,10 @@ function processFigure(figureObj: any): any {
   return figureObj;
 }
 
-  const executionPromise = (async () => {
-    try {
-      const rawResult = await pyodide.runPythonAsync(extractorCode);
-      addLog(`Raw Result : ${rawResult}`);
+  //const executionPromise = (async () => {
+    //try {
+      //const rawResult = await pyodide.runPythonAsync(extractorCode);
+      //addLog(`Raw Result : ${rawResult}`);
       //const codetoPy =  pyodide.toPy(rawResult);
       //addLog(`Code Py : ${codetoPy}`);
       //const codetoJs = pyodide.toJs();
@@ -336,13 +336,25 @@ function processFigure(figureObj: any): any {
       //...resultObj,
       //any: parsedFigure
     //};
+      //return rawResult;
+    //} catch (error: any) {
+      //addLog(`Python execution error: ${error.message}`);
+    //}
+  //})();
+  
+  async function executionFunction(): any {
+    try{
+      const rawResult = await pyodide.runPythonAsync(extractorCode);
+      addLog(`Raw Result : ${rawResult}`);
       return rawResult;
-    } catch (error: any) {
+    }
+    catch (error: any){
       addLog(`Python execution error: ${error.message}`);
     }
-  })();
+  }
 
-  const result: any = await Promise.race([executionPromise, timeoutPromise]);
+  //const result: any = await Promise.race([executionPromise, timeoutPromise]);
+  const result: any = await executionFunction();
   addLog(`Result outside code block: ${result}`);
 
   // Log stdout/stderr
