@@ -70,7 +70,7 @@ const [logs, setLogs] = useState<string[]>([])
 // ----------------------------------------------------------------------------
 const addLog = (message: string) => {
 const timestamp = new Date().toISOString().split('T')[1].split('.')[0]
-setLogs((prev) => [...prev, `[${timestamp}] ${message}]`)
+setLogs((prev) => [...prev, `[${timestamp}] ${message}`])
 console.log(`[Pyodide] ${message}`)
 }
 
