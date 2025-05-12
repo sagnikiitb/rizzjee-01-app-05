@@ -143,8 +143,8 @@ document.head.appendChild(script)
 })
 addLog('Plotly script loaded successfully')
 } catch (error: any) {
-addLog(Plotly loading error: ${error.message})
-setGraphError(Failed to load Plotly script: ${error.message})
+addLog("Plotly loading error: ${error.message}")
+setGraphError("Failed to load Plotly script: ${error.message}")
 }
 }
 
