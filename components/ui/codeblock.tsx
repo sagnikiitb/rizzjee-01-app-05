@@ -354,7 +354,7 @@ async function executePythonCode() {
   let result: any;
 
 async function run() {
-  storedResult = await executePythonCode();
+  result = await executePythonCode();
   console.log("Result stored in variable:", result);
 }
 
