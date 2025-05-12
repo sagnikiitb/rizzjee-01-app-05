@@ -342,7 +342,7 @@ function processFigure(figureObj: any): any {
     //}
   //})();
   
-  async function executionFunction(): any {
+  function executionFunction(): any {
     try{
       const rawResult = await pyodide.runPythonAsync(extractorCode);
       addLog(`Raw Result : ${rawResult}`);
@@ -354,7 +354,7 @@ function processFigure(figureObj: any): any {
   }
 
   //const result: any = await Promise.race([executionPromise, timeoutPromise]);
-  const result: any = await executionFunction();
+  const result: any = executionFunction();
   addLog(`Result outside code block: ${result}`);
 
   // Log stdout/stderr
