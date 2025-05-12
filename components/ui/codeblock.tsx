@@ -255,10 +255,13 @@ try:
         fig_name, fig = figures[0]
 
         # Preprocess each trace to convert NumPy arrays to lists
-        for i, trace in enumerate(fig.data):
+        for trace in fig.data:
             trace_dict = trace.to_plotly_json()
             cleaned_trace = convert_numpy_arrays(trace_dict)
-            fig.data[i] = go.Scatter(**cleaned_trace)  # replace trace safely
+
+            # Correctly update trace fields
+            for key, value in cleaned_trace.items():
+                trace[key] = value  # Update trace values directly
 
         # Now convert the full figure to dict and dump as JSON
         fig_dict = convert_numpy_arrays(fig.to_dict())
