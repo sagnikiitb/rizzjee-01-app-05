@@ -295,16 +295,47 @@ result
       TIMEOUT_MS
     );
   });
+  function decodeBData(bdata, dtype) {
+  const bytes = Uint8Array.from(atob(bdata), c => c.charCodeAt(0));
+  const buffer = bytes.buffer;
+
+  switch (dtype) {
+    case 'f8': return Array.from(new Float64Array(buffer));
+    case 'f4': return Array.from(new Float32Array(buffer));
+    case 'i4': return Array.from(new Int32Array(buffer));
+    case 'i8': return Array.from(new BigInt64Array(buffer));
+    default: throw new Error(`Unsupported dtype: ${dtype}`);
+  }
+}
+function processFigure(figureObj) {
+  for (const trace of figureObj.data) {
+    if (trace.x?.bdata) {
+      trace.x = decodeBData(trace.x.bdata, trace.x.dtype);
+    }
+    if (trace.y?.bdata) {
+      trace.y = decodeBData(trace.y.bdata, trace.y.dtype);
+    }
+  }
+  return figureObj;
+}
 
   const executionPromise = (async () => {
     try {
       const rawResult = await pyodide.runPythonAsync(extractorCode);
       addLog(`Raw Result : ${rawResult}`);
-      const codetoPy =  pyodide.toPy(rawResult);
-      addLog(`Code Py : ${codetoPy}`);
-      const codetoJs = pyodide.toJs();
-      addLog(`Code Js : ${codetoJs}`);
-      return codetoJs;
+      //const codetoPy =  pyodide.toPy(rawResult);
+      //addLog(`Code Py : ${codetoPy}`);
+      //const codetoJs = pyodide.toJs();
+      //addLog(`Code Js : ${codetoJs}`);
+      const resultObj = rawResult.toJs ? rawResult.toJs() : rawResult;
+      addLog(`Converted Result JS:`, resultObj);
+      const parsedFigure = processFigure(resultObj.figure);
+      //return codetoJs;
+          return {
+      ...resultObj,
+      figure: parsedFigure
+    };
+      
     } catch (error: any) {
       //throw new Error(`Python execution error: ${error.message}`);
     }
@@ -313,24 +344,24 @@ result
   const result: any = await Promise.race([executionPromise, timeoutPromise]);
 
   // Log stdout/stderr
-  if (result.stdout) {
+  if (result?.stdout) {
     addLog(`Python stdout: ${result.stdout}`);
   }
-  if (result.stderr) {
+  if (result?.stderr) {
     addLog(`Python stderr: ${result.stderr}`);
   }
 
-  if (!result.success) {
-    addLog(`Execution failed: ${result.error}`);
-    if (result.traceback) {
+  if (!result?.success) {
+    addLog(`Execution failed: ${result?.error}`);
+    if (result?.traceback) {
       addLog(`Traceback: ${result.traceback}`);
     }
-    throw new Error(result.error);
+    throw new Error(result?.error || 'Unknown error');
   }
 
   // Parse and render
   addLog('Parsing plot data...');
-  const figureData = JSON.parse(result.figure);
+  const figureData = typeof result.figure === 'string' ? JSON.parse(result.figure) : result.figure;
   addLog('Rendering plot...');
   window.Plotly.purge(graphId);
   window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
