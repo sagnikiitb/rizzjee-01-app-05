@@ -330,6 +330,7 @@ function processFigure(figureObj: any): any {
       const resultObj = rawResult.toJs ? rawResult.toJs() : rawResult;
       addLog(`Converted Result JS: ${resultObj}`);
       const parsedFigure = processFigure(resultObj.figure);
+      addLog(`Parsed Figure : ${parsedFigure}`);
       //return codetoJs;
           return {
       ...resultObj,
