@@ -299,7 +299,12 @@ result
   const executionPromise = (async () => {
     try {
       const rawResult = await pyodide.runPythonAsync(extractorCode);
-      return pyodide.toPy(rawResult).toJs();
+      addLog(`Raw Result : ${rawResult}`);
+      const codetoPy =  pyodide.toPy(rawResult);
+      addLog(`Code Py : ${codetoPy}`);
+      const codetoJs = codetoPy.toJs();
+      addLog(`Code Js : ${codetoJs}`);
+      return codetoJs;
     } catch (error: any) {
       //throw new Error(`Python execution error: ${error.message}`);
     }
