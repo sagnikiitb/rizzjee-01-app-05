@@ -196,13 +196,13 @@ try {
   // Ensure Pyodide is loaded
   await loadPyodideEnv()
   if (!pyodideLoaded) {
-    throw new Error('Failed to load Python environment')
+    throw new Error(`Failed to load Python environment`)
   }
 
   // Ensure Plotly is available in the browser
   await loadPlotlyScript()
   if (!window.Plotly) {
-    throw new Error('Plotly not available in browser environment')
+    throw new Error(`Plotly not available in browser environment`)
   }
 
   const pyodide = window.pyodide
@@ -288,7 +288,7 @@ result
       () =>
         reject(
           new Error(
-            "Timeout: Execution exceeded ${TIMEOUT_MS / 1000}s. Check for infinite loops"
+            `Timeout: Execution exceeded ${TIMEOUT_MS / 1000}s. Check for infinite loops`
           )
         ),
       TIMEOUT_MS
@@ -300,7 +300,7 @@ result
       const rawResult = await pyodide.runPythonAsync(extractorCode)
       return pyodide.toPy(rawResult).toJs()
     } catch (error: any) {
-      throw new Error("Python execution error: ${error.message}")
+      throw new Error(`Python execution error: ${error.message}`)
     }
   })()
 
@@ -308,38 +308,38 @@ result
 
   // Log stdout/stderr
   if (result.stdout) {
-    addLog("Python stdout: ${result.stdout}")
+    addLog(`Python stdout: ${result.stdout}`)
   }
   if (result.stderr) {
-    addLog("Python stderr: ${result.stderr}")
+    addLog(`Python stderr: ${result.stderr}`)
   }
 
   if (!result.success) {
-    addLog("Execution failed: ${result.error}")
+    addLog(`Execution failed: ${result.error}`)
     if (result.traceback) {
-      addLog("Traceback: ${result.traceback}")
+      addLog(`Traceback: ${result.traceback}`)
     }
     throw new Error(result.error)
   }
 
   // Parse and render
-  addLog('Parsing plot data...')
+  addLog(`Parsing plot data...`)
   const figureData = JSON.parse(result.figure)
-  addLog('Rendering plot...')
+  addLog(`Rendering plot...`)
   window.Plotly.purge(graphId)
   window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {})
-  addLog('Plot rendered successfully!')
+  addLog(`Plot rendered successfully!`)
   setGraphVisible(true)
 } catch (error: any) {
-  console.error('Graph error:', error)
-  addLog("Error: ${error.message}")
-  const message = error.message.startsWith('Timeout')
+  console.error(`Graph error:`, error)
+  addLog(`Error: ${error.message}`)
+  const message = error.message.startsWith(`Timeout`)
     ? error.message
-    : error.message.includes('import')
-    ? "Missing required import: ${error.message}"
-    : error.message.includes('figure')
-    ? "Figure creation error: ${error.message}"
-    : "Execution error: ${error.message}"
+    : error.message.includes(`import`)
+    ? `Missing required import: ${error.message}`
+    : error.message.includes(`figure`)
+    ? `Figure creation error: ${error.message}`
+    : `Execution error: ${error.message}`
   setGraphError(message)
 } finally {
   setIsGenerating(false)
