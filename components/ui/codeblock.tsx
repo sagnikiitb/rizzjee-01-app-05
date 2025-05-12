@@ -194,15 +194,15 @@ setLogs([]);
 try {
   // Ensure Pyodide is loaded
   await loadPyodideEnv();
-  //if (!pyodideLoaded) {
+  if (!pyodideLoaded) {
     //throw new Error('Failed to load Python environment');
-  //}
+  }
 
   // Ensure Plotly is available in the browser
-  //await loadPlotlyScript();
-  //if (!window.Plotly) {
+  await loadPlotlyScript();
+  if (!window.Plotly) {
     //throw new Error('Plotly not available in browser environment');
-  //}
+  }
 
   const pyodide = window.pyodide;
 
@@ -268,9 +268,9 @@ try:
         fig_json = json.dumps(fig_dict)
 
         print(f"Found figure: {fig_name}")
-        result = {
-            fig_json
-        }
+        result = fig_json
+            
+        
     else:
         result = {
             "success": False,
