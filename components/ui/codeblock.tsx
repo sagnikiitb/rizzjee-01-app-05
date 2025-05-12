@@ -214,7 +214,7 @@ import sys
 import io
 import traceback
 from js import console
-Capture stdout and stderr
+
 
 stdout_capture = io.StringIO()
 stderr_capture = io.StringIO()
@@ -223,57 +223,57 @@ sys.stdout = stdout_capture
 sys.stderr = stderr_capture
 
 try:
-import numpy as np
-import plotly.graph_objects as go
-from plotly.utils import PlotlyJSONEncoder
-import json
+  import numpy as np
+  import plotly.graph_objects as go
+  from plotly.utils import PlotlyJSONEncoder
+  import json
 
-def find_figures():
-    figures = []
-    for name, obj in globals().items():
-        if hasattr(obj, 'to_json') and callable(obj.to_json):
-            figures.append((name, obj))
-    return figures
+  def find_figures():
+      figures = []
+      for name, obj in globals().items():
+          if hasattr(obj, 'to_json') and callable(obj.to_json):
+              figures.append((name, obj))
+      return figures
 
-USER_CODE = '''${value.replace(/'/g, "\\'")}'''
-print("Executing Python code:")
-print("---------------------")
-print(USER_CODE)
-print("---------------------")
+  USER_CODE = '''${value.replace(/'/g, "\\'")}'''
+  print("Executing Python code:")
+  print("---------------------")
+  print(USER_CODE)
+  print("---------------------")
 
-# Execute user code
-exec(USER_CODE, globals())
+  # Execute user code
+  exec(USER_CODE, globals())
 
-# Find all figures
-figures = find_figures()
-if figures:
-    fig_name, fig = figures[0]
-    fig_json = json.dumps(fig.to_dict(), cls=PlotlyJSONEncoder)
-    print(f"Found figure: {fig_name}")
-    result = {
-        "success": True,
-        "figure": fig_json,
-        "stdout": stdout_capture.getvalue(),
-        "stderr": stderr_capture.getvalue()
-    }
-else:
-    result = {
-        "success": False,
-        "error": "No Plotly figure found in the global namespace",
-        "stdout": stdout_capture.getvalue(),
-        "stderr": stderr_capture.getvalue()
-    }
+  # Find all figures
+  figures = find_figures()
+  if figures:
+      fig_name, fig = figures[0]
+      fig_json = json.dumps(fig.to_dict(), cls=PlotlyJSONEncoder)
+      print(f"Found figure: {fig_name}")
+      result = {
+          "success": True,
+          "figure": fig_json,
+          "stdout": stdout_capture.getvalue(),
+          "stderr": stderr_capture.getvalue()
+      }
+  else:
+      result = {
+          "success": False,
+          "error": "No Plotly figure found in the global namespace",
+          "stdout": stdout_capture.getvalue(),
+          "stderr": stderr_capture.getvalue()
+      }
 
 except Exception as e:
-traceback_str = traceback.format_exc()
-result = {
-"success": False,
-"error": str(e),
-"traceback": traceback_str,
-"stdout": stdout_capture.getvalue(),
-"stderr": stderr_capture.getvalue()
-}
-Reset stdout and stderr
+  traceback_str = traceback.format_exc()
+  result = {
+  "success": False,
+  "error": str(e),
+  "traceback": traceback_str,
+  "stdout": stdout_capture.getvalue(),
+  "stderr": stderr_capture.getvalue()
+  }
+
 
 sys.stdout = sys.stdout
 sys.stderr = sys.stderr
