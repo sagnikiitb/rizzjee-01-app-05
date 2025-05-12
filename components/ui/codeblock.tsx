@@ -328,7 +328,7 @@ function processFigure(figureObj: any): any {
       //const codetoJs = pyodide.toJs();
       //addLog(`Code Js : ${codetoJs}`);
       const resultObj = rawResult.toJs ? rawResult.toJs() : rawResult;
-      addLog(`Converted Result JS:`, resultObj);
+      addLog(`Converted Result JS: ${resultObj}`);
       const parsedFigure = processFigure(resultObj.figure);
       //return codetoJs;
           return {
