@@ -431,12 +431,12 @@ const trace = {
 //};
 
 // Render the plot
-//Plotly.newPlot('plot', [trace], layout);
-    useEffect(() => {
-    if (graphVisible) {
-      window.Plotly.react(graphId, [trace], figureData.layout || {});
-    }
-  }, [graphVisible, figureData, graphId]);
+window.Plotly.newPlot(graphId, [trace], figureData.layout || {});
+    //useEffect(() => {
+    //if (graphVisible) {
+     // window.Plotly.react(graphId, [trace], figureData.layout || {});
+    //}
+  //}, [graphVisible, figureData, graphId]);
  
 }
 
