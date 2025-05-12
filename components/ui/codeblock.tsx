@@ -363,24 +363,42 @@ async function executePythonCode() {
     const rawResult = await pyodide.runPythonAsync(extractorCode);
     addLog(`Raw Result : ${rawResult}`);
     const jsonResult = JSON.parse(rawResult);
-    addLog(`JSON Result DATA : ${jsonResult.data}`)
-    addLog(`JSON Result DATA : ${jsonResult.layout}`)
+    addLog(`JSON Result DATA : ${JSON.stringify(jsonResult.data)}`);
+    addLog(`JSON Result LAYOUT : ${JSON.stringify(jsonResult.layout)}`);
     return jsonResult
   } catch (error: any) {
     addLog(`Python execution error: ${error.message}`);
   }
 }
+  
   var result: any;
 
-async function run() {
+//async function run() {
+  //result = await executePythonCode();
+  //addLog(`Result stored in variable: ${result}`);
+//}
+
+//run();
+
+  async function run() {
   result = await executePythonCode();
-  addLog(`Result stored in variable: ${result}`);
+  addLog(`Result stored in variable: ${JSON.stringify(result)}`);
+
+  addLog('Parsing plot data...');
+  const figureData = result;
+  addLog(`Only Fig Data (bd64 encoded): ${JSON.stringify(figureData)}`);
+  addLog('Rendering plot...');
+  window.Plotly.purge(graphId);
+  window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
+  addLog('Plot rendered successfully!');
+  setGraphVisible(true);
 }
 
-run();
+run(); // <-- this will now contain all logic and logs
+
   //const result: any = await Promise.race([executionPromise, timeoutPromise]);
   //const result: any = executionFunction();
-  addLog(`Result outside code block: ${result}`);
+  //addLog(`Result outside code block: ${result}`);
 
   // Log stdout/stderr
 //  if (result?.stdout) {
@@ -399,15 +417,15 @@ run();
   //}
 
   // Parse and render
-  addLog('Parsing plot data...');
+  //addLog('Parsing plot data...');
   //const figureData = typeof result.figure === 'string' ? JSON.parse(result.figure) : result.figure;
-  const figureData = result;
-  addLog(`Only Fig Data (bd64 encoded) ${figureData}`);
-  addLog('Rendering plot...');
-  window.Plotly.purge(graphId);
-  window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
-  addLog('Plot rendered successfully!');
-  setGraphVisible(true);
+  //const figureData = result;
+  //addLog(`Only Fig Data (bd64 encoded) ${figureData}`);
+  //addLog('Rendering plot...');
+  //window.Plotly.purge(graphId);
+  //window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
+  //addLog('Plot rendered successfully!');
+  //setGraphVisible(true);
 } catch (error: any) {
   //console.error('Graph error:', error);
   addLog(`Error: ${error.message}`);
