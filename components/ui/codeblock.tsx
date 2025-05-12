@@ -232,12 +232,12 @@ try:
                 figures.append((name, obj))
         return figures
 
-    def to_serializable(obj):
+    def convert_numpy_arrays(obj):
         if isinstance(obj, dict):
-            return {k: to_serializable(v) for k, v in obj.items()}
+            return {k: convert_numpy_arrays(v) for k, v in obj.items()}
         elif isinstance(obj, list):
-            return [to_serializable(i) for i in obj]
-        elif hasattr(obj, "tolist"):  # NumPy array, etc.
+            return [convert_numpy_arrays(i) for i in obj]
+        elif hasattr(obj, "tolist"):  # NumPy array or similar
             return obj.tolist()
         else:
             return obj
@@ -253,9 +253,16 @@ try:
     figures = find_figures()
     if figures:
         fig_name, fig = figures[0]
-        fig_dict = fig.to_dict()
-        clean_fig_dict = to_serializable(fig_dict)
-        fig_json = json.dumps(clean_fig_dict)
+
+        # Preprocess each trace to convert NumPy arrays to lists
+        for i, trace in enumerate(fig.data):
+            trace_dict = trace.to_plotly_json()
+            cleaned_trace = convert_numpy_arrays(trace_dict)
+            fig.data[i] = go.Scatter(**cleaned_trace)  # replace trace safely
+
+        # Now convert the full figure to dict and dump as JSON
+        fig_dict = convert_numpy_arrays(fig.to_dict())
+        fig_json = json.dumps(fig_dict)
 
         print(f"Found figure: {fig_name}")
         result = {
@@ -287,6 +294,7 @@ sys.stderr = sys.stderr
 
 result
 `;
+
 
 
   addLog('Executing Python code...');
