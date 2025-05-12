@@ -135,7 +135,7 @@ return
 addLog('Loading Plotly JS from CDN...')
 try {
 const script = document.createElement('script')
-script.src = 'https://cdn.plot.ly/plotly-latest.min.js'
+script.src = 'https://cdn.plot.ly/plotly-3.0.1.min.js'
 await new Promise((resolve, reject) => {
 script.onload = resolve
 script.onerror = reject
@@ -143,8 +143,8 @@ document.head.appendChild(script)
 })
 addLog('Plotly script loaded successfully')
 } catch (error: any) {
-addLog("Plotly loading error: ${error.message}")
-setGraphError("Failed to load Plotly script: ${error.message}")
+addLog(`Plotly loading error: ${error.message}`)
+setGraphError(`Failed to load Plotly script: ${error.message}`)
 }
 }
 
