@@ -345,8 +345,10 @@ function processFigure(figureObj: any): any {
 async function executePythonCode() {
   try {
     const rawResult = await pyodide.runPythonAsync(extractorCode);
-    addLog(`Raw Result : ${rawResult.figure}`);
-    return rawResult.figure;
+    addLog(`Raw Result : ${rawResult}`);
+    const jsonResult = JSON.parse(rawResult);
+    addLog(`JSON Result : ${jsonResult.figure}`)
+    return jsonResult.figure;
   } catch (error: any) {
     addLog(`Python execution error: ${error.message}`);
   }
