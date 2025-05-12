@@ -389,8 +389,6 @@ try {
 } finally {
   setIsGenerating(false);
 }
-
-
 };
 
 const isPlotlyCode = language === 'python' && value.includes('plotly');
