@@ -295,7 +295,7 @@ result
       TIMEOUT_MS
     );
   });
-  function decodeBData(bdata, dtype) {
+  function decodeBData(bdata: string, dtype: string): (number[] | bigint[]) {
   const bytes = Uint8Array.from(atob(bdata), c => c.charCodeAt(0));
   const buffer = bytes.buffer;
 
