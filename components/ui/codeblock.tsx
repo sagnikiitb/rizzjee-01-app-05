@@ -299,7 +299,7 @@ result
 
   addLog('Executing Python code...');
 
-  const TIMEOUT_MS = 30000;
+  const TIMEOUT_MS = 300000;
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(
       () =>
@@ -361,10 +361,10 @@ function processFigure(figureObj: any): any {
 async function executePythonCode() {
   try {
     const rawResult = await pyodide.runPythonAsync(extractorCode);
-    addLog(`Raw Result : ${rawResult}`);
+    //addLog(`Raw Result : ${rawResult}`);
     const jsonResult = JSON.parse(rawResult);
-    addLog(`JSON Result DATA : ${JSON.stringify(jsonResult.data)}`);
-    addLog(`JSON Result LAYOUT : ${JSON.stringify(jsonResult.layout)}`);
+    //addLog(`JSON Result DATA : ${JSON.stringify(jsonResult.data)}`);
+    //addLog(`JSON Result LAYOUT : ${JSON.stringify(jsonResult.layout)}`);
     return jsonResult
   } catch (error: any) {
     addLog(`Python execution error: ${error.message}`);
@@ -382,12 +382,12 @@ async function executePythonCode() {
 
   async function run() {
   result = await executePythonCode();
-  addLog(`Result stored in variable: ${JSON.stringify(result)}`);
+  //addLog(`Result stored in variable: ${JSON.stringify(result)}`);
 
   addLog('Parsing plot data...');
   const figureData = result;
-  addLog(`Only Fig Data (bd64 encoded): ${JSON.stringify(figureData)}`);
-  addLog('Rendering plot...');
+  //addLog(`Only Fig Data (bd64 encoded): ${JSON.stringify(figureData)}`);
+  //addLog('Rendering plot...');
   window.Plotly.purge(graphId);
   window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
   addLog('Plot rendered successfully!');
