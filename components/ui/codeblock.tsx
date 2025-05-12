@@ -385,13 +385,59 @@ async function executePythonCode() {
   //addLog(`Result stored in variable: ${JSON.stringify(result)}`);
 
   addLog('Parsing plot data...');
+   setGraphVisible(true);
   const figureData = result;
   //addLog(`Only Fig Data (bd64 encoded): ${JSON.stringify(figureData)}`);
   //addLog('Rendering plot...');
-  window.Plotly.purge(graphId);
-  window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
-  addLog('Plot rendered successfully!');
-  setGraphVisible(true);
+    //window.Plotly.purge(graphId);
+    //window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
+    //addLog('Plot rendered successfully!');
+    // Function to decode Base64 to Float64Array
+function decodeBase64Float64(bdata: string): Float64Array {
+  const binary = atob(bdata);
+  const buffer = new ArrayBuffer(binary.length);
+  const view = new Uint8Array(buffer);
+  for (let i = 0; i < binary.length; i++) {
+    view[i] = binary.charCodeAt(i);
+  }
+  return new Float64Array(buffer);
+}
+
+// Replace with your actual bdata strings
+const xB64 = figureData.data.x.bdata;
+const yB64 = figureData.data.y.bdata;
+const graph_type = figureData.data.type;
+const graph_mode = figureData.data.mode;
+const graph_name = figureData.data.name;
+
+// Decode the data
+const x = Array.from(decodeBase64Float64(xB64));
+const y = Array.from(decodeBase64Float64(yB64));
+
+// Plotly trace
+const trace = {
+  x: x,
+  y: y,
+  type: graph_type,
+  mode: graph_mode,
+  name: graph_name
+};
+
+// Layout (simplified, you can use your full layout object if needed)
+//const layout = {
+//  title: 'Plot of y = 3sin(5x)',
+//  xaxis: { title: 'x' },
+//  yaxis: { title: 'y' }
+//};
+
+// Render the plot
+//Plotly.newPlot('plot', [trace], layout);
+    useEffect(() => {
+    if (graphVisible) {
+      window.Plotly.react(graphId, [trace], figureData.layout || {});
+    }
+  }, [graphVisible, figureData, graphId]);
+ 
 }
 
 run(); // <-- this will now contain all logic and logs
