@@ -363,8 +363,8 @@ async function executePythonCode() {
     const rawResult = await pyodide.runPythonAsync(extractorCode);
     //addLog(`Raw Result : ${rawResult}`);
     const jsonResult = JSON.parse(rawResult);
-    //addLog(`JSON Result DATA : ${JSON.stringify(jsonResult.data)}`);
-    //addLog(`JSON Result LAYOUT : ${JSON.stringify(jsonResult.layout)}`);
+    addLog(`JSON Result DATA : ${JSON.stringify(jsonResult.data)}`);
+    addLog(`JSON Result LAYOUT : ${JSON.stringify(jsonResult.layout)}`);
     return jsonResult
   } catch (error: any) {
     addLog(`Python execution error: ${error.message}`);
