@@ -1,22 +1,22 @@
-'use client'
-import { FC, memo, useState, useEffect } from 'react'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism'
-import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard'
-import { Button } from '@/components/ui/button'
-import { generateId } from 'ai'
-import { Check, Copy, Download, PlayCircle } from 'lucide-react'
+'use client';
+import { FC, memo, useState, useEffect } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard';
+import { Button } from '@/components/ui/button';
+import { generateId } from 'ai';
+import { Check, Copy, Download, PlayCircle } from 'lucide-react';
 
 interface Props {
-language: string
-value: string
+language: string;
+value: string;
 }
 
-interface languageMap {
-[key: string]: string | undefined
+interface LanguageMap {
+[key: string]: string | undefined;
 }
 
-export const programmingLanguages: languageMap = {
+export const programmingLanguages: LanguageMap = {
 javascript: '.js',
 python: '.py',
 java: '.java',
@@ -40,89 +40,88 @@ shell: '.sh',
 sql: '.sql',
 html: '.html',
 css: '.css'
-}
+};
 
 declare global {
 interface Window {
-Plotly: any
-pyodide: any
-loadPyodide: any
+Plotly: any;
+pyodide: any;
+loadPyodide: any;
 }
 }
 
 interface PlotlyFigure {
-data: any[]
-layout?: Record<string, any>
+data: any[];
+layout?: Record<string, any>;
 }
 
 const CodeBlock: FC<Props> = memo(({ language, value }) => {
-const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 })
-const [graphVisible, setGraphVisible] = useState(false)
-const [graphId] = useState(`graph-${generateId()}`)
-const [isGenerating, setIsGenerating] = useState(false)
-const [graphError, setGraphError] = useState<string | null>(null)
-const [pyodideLoaded, setPyodideLoaded] = useState(false)
-const [pyodideLoading, setPyodideLoading] = useState(false)
-const [logs, setLogs] = useState<string[]>([])
+const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 });
+const [graphVisible, setGraphVisible] = useState(false);
+const [graphId] = useState(graph-${generateId()});
+const [isGenerating, setIsGenerating] = useState(false);
+const [graphError, setGraphError] = useState<string | null>(null);
+const [pyodideLoaded, setPyodideLoaded] = useState(false);
+const [pyodideLoading, setPyodideLoading] = useState(false);
+const [logs, setLogs] = useState<string[]>([]);
 
 // ----------------------------------------------------------------------------
 // Function to add a log entry with timestamp.
 // ----------------------------------------------------------------------------
 const addLog = (message: string) => {
-const timestamp = new Date().toISOString().split('T')[1].split('.')[0]
-setLogs((prev) => [...prev, `[${timestamp}] ${message}`])
-console.log(`[Pyodide] ${message}`)
-}
+const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+setLogs((prev) => [...prev, [${timestamp}] ${message}]);
+console.log([Pyodide] ${message});
+};
 
 // ----------------------------------------------------------------------------
 // Function to programmatically load Pyodide if not loaded.
 // ----------------------------------------------------------------------------
 const loadPyodideEnv = async () => {
-if (pyodideLoaded || pyodideLoading) return
-setPyodideLoading(true)
-addLog('Loading Pyodide...')
+if (pyodideLoaded || pyodideLoading) return;
+setPyodideLoading(true);
+addLog('Loading Pyodide...');
 
 try {
   // Load Pyodide script
-  const script = document.createElement('script')
-  script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js'
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
   await new Promise((resolve, reject) => {
-    script.onload = resolve
-    script.onerror = reject
-    document.head.appendChild(script)
-  })
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
 
-  addLog('Pyodide script loaded, initializing...')
+  addLog('Pyodide script loaded, initializing...');
 
   // Initialize Pyodide
   const pyodide = await window.loadPyodide({
     indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/'
-  })
-  window.pyodide = pyodide
+  });
+  window.pyodide = pyodide;
 
   // Load packages
-  addLog('Installing required packages...')
-  // Load basic import for numpy (adjust if needed)
+  addLog('Installing required packages...');
   await pyodide.loadPackagesFromImports(`
 
 import numpy
-`)
-addLog('Installing micropip...')
-await pyodide.loadPackage('micropip')
-const micropip = pyodide.pyimport('micropip')
-addLog('Installing plotly...')
-await micropip.install('plotly')
+`);
+addLog('Installing micropip...');
+await pyodide.loadPackage('micropip');
+const micropip = pyodide.pyimport('micropip');
+addLog('Installing plotly...');
+await micropip.install('plotly');
 
-  addLog('Pyodide setup complete!')
-  setPyodideLoaded(true)
+  addLog('Pyodide setup complete!');
+  setPyodideLoaded(true);
 } catch (error: any) {
-  addLog(`Pyodide loading error: ${error.message}`)
-  setGraphError(`Failed to load Python environment: ${error.message}`)
+  addLog(`Pyodide loading error: ${error.message}`);
+  setGraphError(`Failed to load Python environment: ${error.message}`);
 } finally {
-  setPyodideLoading(false)
+  setPyodideLoading(false);
 }
 
-}
+};
 
 // ----------------------------------------------------------------------------
 // Function to programmatically load Plotly for rendering in the browser.
@@ -130,84 +129,85 @@ await micropip.install('plotly')
 const loadPlotlyScript = async () => {
 if (window.Plotly) {
 // Already loaded
-return
+return;
 }
-addLog('Loading Plotly JS from CDN...')
+addLog('Loading Plotly JS from CDN...');
 try {
-const script = document.createElement('script')
-script.src = 'https://cdn.plot.ly/plotly-3.0.1.min.js'
+const script = document.createElement('script');
+script.src = 'https://cdn.plot.ly/plotly-3.0.1.min.js';
 await new Promise((resolve, reject) => {
-script.onload = resolve
-script.onerror = reject
-document.head.appendChild(script)
-})
-addLog('Plotly script loaded successfully')
+script.onload = resolve;
+script.onerror = reject;
+document.head.appendChild(script);
+});
+addLog('Plotly script loaded successfully');
 } catch (error: any) {
-addLog(`Plotly loading error: ${error.message}`)
-setGraphError(`Failed to load Plotly script: ${error.message}`)
+addLog(Plotly loading error: ${error.message});
+setGraphError(Failed to load Plotly script: ${error.message});
 }
-}
+};
 
 // ----------------------------------------------------------------------------
 // Function to download code as a file.
 // ----------------------------------------------------------------------------
 const downloadAsFile = () => {
 if (typeof window === 'undefined') {
-return
+return;
 }
-const fileExtension = programmingLanguages[language] || '.file'
-const suggestedFileName = "file-${generateId()}${fileExtension}"
-const fileName = window.prompt('Enter file name', suggestedFileName)
+const fileExtension = programmingLanguages[language] || '.file';
+const suggestedFileName = file-${generateId()}${fileExtension};
+const fileName = window.prompt('Enter file name', suggestedFileName);
 if (!fileName) {
-// User pressed cancel on prompt.
-return
+// User pressed cancel
+return;
 }
-const blob = new Blob([value], { type: 'text/plain' })
-const url = URL.createObjectURL(blob)
-const link = document.createElement('a')
-link.download = fileName
-link.href = url
-link.style.display = 'none'
-document.body.appendChild(link)
-link.click()
-document.body.removeChild(link)
-URL.revokeObjectURL(url)
-}
+const blob = new Blob([value], { type: 'text/plain' });
+const url = URL.createObjectURL(blob);
+const link = document.createElement('a');
+link.download = fileName;
+link.href = url;
+link.style.display = 'none';
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+URL.revokeObjectURL(url);
+};
 
 // ----------------------------------------------------------------------------
 // Function to copy code to clipboard.
 // ----------------------------------------------------------------------------
 const onCopy = () => {
-if (isCopied) return
-copyToClipboard(value)
-}
+if (isCopied) return;
+copyToClipboard(value);
+};
 
 // ----------------------------------------------------------------------------
 // Main function to generate the Plotly graph via Pyodide.
 // ----------------------------------------------------------------------------
 const generateGraph = async () => {
-if (language !== 'python' || !value.includes('plotly')) return
-setIsGenerating(true)
-setGraphError(null)
-setGraphVisible(false)
-setLogs([])
+if (language !== 'python' || !value.includes('plotly')) return;
+setIsGenerating(true);
+setGraphError(null);
+setGraphVisible(false);
+setLogs([]);
 
 try {
   // Ensure Pyodide is loaded
-  await loadPyodideEnv()
+  await loadPyodideEnv();
   if (!pyodideLoaded) {
-    throw new Error(`Failed to load Python environment`)
+    throw new Error('Failed to load Python environment');
   }
 
   // Ensure Plotly is available in the browser
-  await loadPlotlyScript()
+  await loadPlotlyScript();
   if (!window.Plotly) {
-    throw new Error(`Plotly not available in browser environment`)
+    throw new Error('Plotly not available in browser environment');
   }
 
-  const pyodide = window.pyodide
+  const pyodide = window.pyodide;
 
   // Code snippet to execute user’s code + extract the first Plotly figure
+  // Comments fixed here:
   const extractorCode = `
 
 import sys
@@ -218,6 +218,7 @@ Capture stdout and stderr
 
 stdout_capture = io.StringIO()
 stderr_capture = io.StringIO()
+
 sys.stdout = stdout_capture
 sys.stderr = stderr_capture
 
@@ -278,11 +279,11 @@ sys.stdout = sys.stdout
 sys.stderr = sys.stderr
 
 result
-`
+`;
 
-  addLog('Executing Python code...')
+  addLog('Executing Python code...');
 
-  const TIMEOUT_MS = 30000
+  const TIMEOUT_MS = 30000;
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(
       () =>
@@ -292,62 +293,62 @@ result
           )
         ),
       TIMEOUT_MS
-    )
-  })
+    );
+  });
 
   const executionPromise = (async () => {
     try {
-      const rawResult = await pyodide.runPythonAsync(extractorCode)
-      return pyodide.toPy(rawResult).toJs()
+      const rawResult = await pyodide.runPythonAsync(extractorCode);
+      return pyodide.toPy(rawResult).toJs();
     } catch (error: any) {
-      throw new Error(`Python execution error: ${error.message}`)
+      throw new Error(`Python execution error: ${error.message}`);
     }
-  })()
+  })();
 
-  const result: any = await Promise.race([executionPromise, timeoutPromise])
+  const result: any = await Promise.race([executionPromise, timeoutPromise]);
 
   // Log stdout/stderr
   if (result.stdout) {
-    addLog(`Python stdout: ${result.stdout}`)
+    addLog(`Python stdout: ${result.stdout}`);
   }
   if (result.stderr) {
-    addLog(`Python stderr: ${result.stderr}`)
+    addLog(`Python stderr: ${result.stderr}`);
   }
 
   if (!result.success) {
-    addLog(`Execution failed: ${result.error}`)
+    addLog(`Execution failed: ${result.error}`);
     if (result.traceback) {
-      addLog(`Traceback: ${result.traceback}`)
+      addLog(`Traceback: ${result.traceback}`);
     }
-    throw new Error(result.error)
+    throw new Error(result.error);
   }
 
   // Parse and render
-  addLog(`Parsing plot data...`)
-  const figureData = JSON.parse(result.figure)
-  addLog(`Rendering plot...`)
-  window.Plotly.purge(graphId)
-  window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {})
-  addLog(`Plot rendered successfully!`)
-  setGraphVisible(true)
+  addLog('Parsing plot data...');
+  const figureData = JSON.parse(result.figure);
+  addLog('Rendering plot...');
+  window.Plotly.purge(graphId);
+  window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
+  addLog('Plot rendered successfully!');
+  setGraphVisible(true);
 } catch (error: any) {
-  console.error(`Graph error:`, error)
-  addLog(`Error: ${error.message}`)
-  const message = error.message.startsWith(`Timeout`)
+  console.error('Graph error:', error);
+  addLog(`Error: ${error.message}`);
+  const message = error.message.startsWith('Timeout')
     ? error.message
-    : error.message.includes(`import`)
+    : error.message.includes('import')
     ? `Missing required import: ${error.message}`
-    : error.message.includes(`figure`)
+    : error.message.includes('figure')
     ? `Figure creation error: ${error.message}`
-    : `Execution error: ${error.message}`
-  setGraphError(message)
+    : `Execution error: ${error.message}`;
+  setGraphError(message);
 } finally {
-  setIsGenerating(false)
+  setIsGenerating(false);
 }
 
-}
+};
 
-const isPlotlyCode = language === 'python' && value.includes('plotly')
+const isPlotlyCode = language === 'python' && value.includes('plotly');
 
 return (
 <div className="relative w-full font-sans codeblock bg-neutral-800">
@@ -431,17 +432,18 @@ fontFamily: 'var(--font-mono)'
               r="10"
               stroke="currentColor"
               strokeWidth="4"
-            ></circle>
+            />
             <path
               className="opacity-75"
               fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-          {pyodideLoading ? 'Loading Python environment...' : 'Generating graph...'}
-          &nbsp;This may take a few seconds
-        </div>
-      )}
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 
+
+3.042 1.135 5.824 3 7.938l3-2.647z"
+/>
+</svg>
+{pyodideLoading ? 'Loading Python environment...' : 'Generating graph...'} This may take a few seconds
+</div>
+)}
 
       {graphError && (
         <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-md">
@@ -486,7 +488,8 @@ fontFamily: 'var(--font-mono)'
   )}
 </div>
 
-)
-})
-CodeBlock.displayName = 'CodeBlock'
-export { CodeBlock }
+);
+});
+
+CodeBlock.displayName = 'CodeBlock';
+export { CodeBlock };
