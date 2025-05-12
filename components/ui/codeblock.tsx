@@ -345,8 +345,8 @@ function processFigure(figureObj: any): any {
 async function executePythonCode() {
   try {
     const rawResult = await pyodide.runPythonAsync(extractorCode);
-    addLog(`Raw Result : ${rawResult}`);
-    return rawResult;
+    addLog(`Raw Result : ${rawResult.figure}`);
+    return rawResult.figure;
   } catch (error: any) {
     addLog(`Python execution error: ${error.message}`);
   }
@@ -355,7 +355,7 @@ async function executePythonCode() {
 
 async function run() {
   result = await executePythonCode();
-  console.log("Result stored in variable:", result);
+  addLog(`Result stored in variable: ${result}`);
 }
 
 run();
@@ -381,7 +381,8 @@ run();
 
   // Parse and render
   addLog('Parsing plot data...');
-  const figureData = typeof result.figure === 'string' ? JSON.parse(result.figure) : result.figure;
+  //const figureData = typeof result.figure === 'string' ? JSON.parse(result.figure) : result.figure;
+  let figureData = result;
   addLog(`Only Fig Data (bd64 encoded) ${figureData}`);
   addLog('Rendering plot...');
   window.Plotly.purge(graphId);
