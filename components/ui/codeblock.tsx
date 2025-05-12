@@ -208,13 +208,11 @@ try {
 
   // Code snippet to execute user’s code + extract the first Plotly figure
   // Comments fixed here:
-  const extractorCode = `
-
+const extractorCode = `
 import sys
 import io
 import traceback
 from js import console
-
 
 stdout_capture = io.StringIO()
 stderr_capture = io.StringIO()
@@ -223,63 +221,73 @@ sys.stdout = stdout_capture
 sys.stderr = stderr_capture
 
 try:
-  import numpy as np
-  import plotly.graph_objects as go
-  from plotly.utils import PlotlyJSONEncoder
-  import json
+    import numpy as np
+    import plotly.graph_objects as go
+    import json
 
-  def find_figures():
-      figures = []
-      for name, obj in globals().items():
-          if hasattr(obj, 'to_json') and callable(obj.to_json):
-              figures.append((name, obj))
-      return figures
+    def find_figures():
+        figures = []
+        for name, obj in globals().items():
+            if hasattr(obj, 'to_dict') and callable(obj.to_dict):
+                figures.append((name, obj))
+        return figures
 
-  USER_CODE = '''${value.replace(/'/g, "\\'")}'''
-  print("Executing Python code:")
-  print("---------------------")
-  print(USER_CODE)
-  print("---------------------")
+    def to_serializable(obj):
+        if isinstance(obj, dict):
+            return {k: to_serializable(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [to_serializable(i) for i in obj]
+        elif hasattr(obj, "tolist"):  # NumPy array, etc.
+            return obj.tolist()
+        else:
+            return obj
 
-  # Execute user code
-  exec(USER_CODE, globals())
+    USER_CODE = '''${value.replace(/'/g, "\\'")}'''
+    print("Executing Python code:")
+    print("---------------------")
+    print(USER_CODE)
+    print("---------------------")
 
-  # Find all figures
-  figures = find_figures()
-  if figures:
-      fig_name, fig = figures[0]
-      fig_json = json.dumps(fig.to_dict(), cls=PlotlyJSONEncoder)
-      print(f"Found figure: {fig_name}")
-      result = {
-          "success": True,
-          "figure": fig_json,
-          "stdout": stdout_capture.getvalue(),
-          "stderr": stderr_capture.getvalue()
-      }
-  else:
-      result = {
-          "success": False,
-          "error": "No Plotly figure found in the global namespace",
-          "stdout": stdout_capture.getvalue(),
-          "stderr": stderr_capture.getvalue()
-      }
+    exec(USER_CODE, globals())
+
+    figures = find_figures()
+    if figures:
+        fig_name, fig = figures[0]
+        fig_dict = fig.to_dict()
+        clean_fig_dict = to_serializable(fig_dict)
+        fig_json = json.dumps(clean_fig_dict)
+
+        print(f"Found figure: {fig_name}")
+        result = {
+            "success": True,
+            "figure": fig_json,
+            "stdout": stdout_capture.getvalue(),
+            "stderr": stderr_capture.getvalue()
+        }
+    else:
+        result = {
+            "success": False,
+            "error": "No Plotly figure found in the global namespace",
+            "stdout": stdout_capture.getvalue(),
+            "stderr": stderr_capture.getvalue()
+        }
 
 except Exception as e:
-  traceback_str = traceback.format_exc()
-  result = {
-  "success": False,
-  "error": str(e),
-  "traceback": traceback_str,
-  "stdout": stdout_capture.getvalue(),
-  "stderr": stderr_capture.getvalue()
-  }
-
+    traceback_str = traceback.format_exc()
+    result = {
+        "success": False,
+        "error": str(e),
+        "traceback": traceback_str,
+        "stdout": stdout_capture.getvalue(),
+        "stderr": stderr_capture.getvalue()
+    }
 
 sys.stdout = sys.stdout
 sys.stderr = sys.stderr
 
 result
 `;
+
 
   addLog('Executing Python code...');
 
