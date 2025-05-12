@@ -342,20 +342,25 @@ function processFigure(figureObj: any): any {
     //}
   //})();
   
-  function executionFunction(): any {
-    try{
-      //const rawResult = await pyodide.runPythonAsync(extractorCode);
-      const rawResult = pyodide.runPythonAsync(extractorCode);
-      addLog(`Raw Result : ${rawResult}`);
-      return rawResult;
-    }
-    catch (error: any){
-      addLog(`Python execution error: ${error.message}`);
-    }
+async function executePythonCode() {
+  try {
+    const rawResult = await pyodide.runPythonAsync(extractorCode);
+    addLog(`Raw Result : ${rawResult}`);
+    return rawResult;
+  } catch (error: any) {
+    addLog(`Python execution error: ${error.message}`);
   }
+}
+  let result: any;
 
+async function run() {
+  storedResult = await executePythonCode();
+  console.log("Result stored in variable:", result);
+}
+
+run();
   //const result: any = await Promise.race([executionPromise, timeoutPromise]);
-  const result: any = executionFunction();
+  //const result: any = executionFunction();
   addLog(`Result outside code block: ${result}`);
 
   // Log stdout/stderr
