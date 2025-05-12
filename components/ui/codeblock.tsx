@@ -194,15 +194,15 @@ setLogs([]);
 try {
   // Ensure Pyodide is loaded
   await loadPyodideEnv();
-  if (!pyodideLoaded) {
+  //if (!pyodideLoaded) {
     //throw new Error('Failed to load Python environment');
-  }
+  //}
 
   // Ensure Plotly is available in the browser
-  await loadPlotlyScript();
-  if (!window.Plotly) {
+  //await loadPlotlyScript();
+  //if (!window.Plotly) {
     //throw new Error('Plotly not available in browser environment');
-  }
+  //}
 
   const pyodide = window.pyodide;
 
@@ -269,10 +269,7 @@ try:
 
         print(f"Found figure: {fig_name}")
         result = {
-            "success": True,
-            "figure": fig_json,
-            "stdout": stdout_capture.getvalue(),
-            "stderr": stderr_capture.getvalue()
+            fig_json
         }
     else:
         result = {
@@ -366,13 +363,14 @@ async function executePythonCode() {
     const rawResult = await pyodide.runPythonAsync(extractorCode);
     addLog(`Raw Result : ${rawResult}`);
     const jsonResult = JSON.parse(rawResult);
-    addLog(`JSON Result : ${jsonResult.figure}`)
-    return jsonResult.figure;
+    addLog(`JSON Result DATA : ${jsonResult.data}`)
+    addLog(`JSON Result DATA : ${jsonResult.layout}`)
+    return jsonResult
   } catch (error: any) {
     addLog(`Python execution error: ${error.message}`);
   }
 }
-  let result: any;
+  var result: any;
 
 async function run() {
   result = await executePythonCode();
@@ -403,7 +401,7 @@ run();
   // Parse and render
   addLog('Parsing plot data...');
   //const figureData = typeof result.figure === 'string' ? JSON.parse(result.figure) : result.figure;
-  let figureData = result;
+  const figureData = result;
   addLog(`Only Fig Data (bd64 encoded) ${figureData}`);
   addLog('Rendering plot...');
   window.Plotly.purge(graphId);
