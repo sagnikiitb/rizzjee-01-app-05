@@ -307,7 +307,7 @@ result
     default: throw new Error(`Unsupported dtype: ${dtype}`);
   }
 }
-function processFigure(figureObj) {
+function processFigure(figureObj: any): any {
   for (const trace of figureObj.data) {
     if (trace.x?.bdata) {
       trace.x = decodeBData(trace.x.bdata, trace.x.dtype);
