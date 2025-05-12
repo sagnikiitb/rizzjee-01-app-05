@@ -58,7 +58,7 @@ layout?: Record<string, any>;
 const CodeBlock: FC<Props> = memo(({ language, value }) => {
 const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 });
 const [graphVisible, setGraphVisible] = useState(false);
-const [graphId] = useState(graph-${generateId()});
+const [graphId] = useState(`graph-${generateId()}`);
 const [isGenerating, setIsGenerating] = useState(false);
 const [graphError, setGraphError] = useState<string | null>(null);
 const [pyodideLoaded, setPyodideLoaded] = useState(false);
