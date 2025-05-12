@@ -327,58 +327,60 @@ function processFigure(figureObj: any): any {
       //addLog(`Code Py : ${codetoPy}`);
       //const codetoJs = pyodide.toJs();
       //addLog(`Code Js : ${codetoJs}`);
-      const resultObj = rawResult.toJs ? rawResult.toJs() : rawResult;
-      addLog(`Converted Result JS: ${resultObj}`);
-      const parsedFigure = processFigure(resultObj.figure);
-      addLog(`Parsed Figure : ${parsedFigure}`);
+      //const resultObj = rawResult.toJs ? rawResult.toJs() : rawResult;
+      //addLog(`Converted Result JS: ${resultObj}`);
+      //const parsedFigure = processFigure(rawResult.figure);
+      //addLog(`Parsed Figure : ${parsedFigure}`);
       //return codetoJs;
-          return {
-      ...resultObj,
-      figure: parsedFigure
-    };
-      
+       //   return {
+      //...resultObj,
+      //any: parsedFigure
+    //};
+      return rawResult;
     } catch (error: any) {
-      //throw new Error(`Python execution error: ${error.message}`);
+      addLog(`Python execution error: ${error.message}`);
     }
   })();
 
   const result: any = await Promise.race([executionPromise, timeoutPromise]);
+  addLog(`Result outside code block: ${result}`);
 
   // Log stdout/stderr
-  if (result?.stdout) {
-    addLog(`Python stdout: ${result.stdout}`);
-  }
-  if (result?.stderr) {
-    addLog(`Python stderr: ${result.stderr}`);
-  }
+//  if (result?.stdout) {
+  //  addLog(`Python stdout: ${result.stdout}`);
+  //}
+  //if (result?.stderr) {
+    //addLog(`Python stderr: ${result.stderr}`);
+  //}
 
-  if (!result?.success) {
-    addLog(`Execution failed: ${result?.error}`);
-    if (result?.traceback) {
-      addLog(`Traceback: ${result.traceback}`);
-    }
-    throw new Error(result?.error || 'Unknown error');
-  }
+  //if (!result?.success) {
+    //addLog(`Execution failed: ${result?.error}`);
+    //if (result?.traceback) {
+      //addLog(`Traceback: ${result.traceback}`);
+    //}
+    //throw new Error(result?.error || 'Unknown error');
+  //}
 
   // Parse and render
   addLog('Parsing plot data...');
   const figureData = typeof result.figure === 'string' ? JSON.parse(result.figure) : result.figure;
+  addLog(`Only Fig Data (bd64 encoded) ${figureData}`);
   addLog('Rendering plot...');
   window.Plotly.purge(graphId);
   window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
   addLog('Plot rendered successfully!');
   setGraphVisible(true);
 } catch (error: any) {
-  console.error('Graph error:', error);
+  //console.error('Graph error:', error);
   addLog(`Error: ${error.message}`);
-  const message = error.message.startsWith('Timeout')
-    ? error.message
-    : error.message.includes('import')
-    ? `Missing required import: ${error.message}`
-    : error.message.includes('figure')
-    ? `Figure creation error: ${error.message}`
-    : `Execution error: ${error.message}`;
-  setGraphError(message);
+  //const message = error.message.startsWith('Timeout')
+    //? error.message
+    //: error.message.includes('import')
+    //? `Missing required import: ${error.message}`
+    //: error.message.includes('figure')
+    //? `Figure creation error: ${error.message}`
+    //: `Execution error: ${error.message}`;
+  //setGraphError(message);
 } finally {
   setIsGenerating(false);
 }
