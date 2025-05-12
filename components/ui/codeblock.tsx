@@ -452,7 +452,7 @@ fontFamily: 'var(--font-mono)'
           <div className="mt-2 text-xs">
             Tips:
             <ul className="list-disc pl-5 mt-1">
-              <li>Ensure your code creates a Plotly figure (named 'fig', 'figure', etc.)</li>
+              <li>Ensure your code creates a Plotly figure (named fig, figure, etc.)</li>
               <li>Check for syntax errors in your Python code</li>
               <li>Make sure imports and data are properly defined</li>
             </ul>
