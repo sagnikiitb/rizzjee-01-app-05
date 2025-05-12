@@ -301,7 +301,7 @@ result
       const rawResult = await pyodide.runPythonAsync(extractorCode);
       return pyodide.toPy(rawResult).toJs();
     } catch (error: any) {
-      throw new Error(`Python execution error: ${error.message}`);
+      //throw new Error(`Python execution error: ${error.message}`);
     }
   })();
 
