@@ -116,7 +116,7 @@ await micropip.install('plotly');
   setPyodideLoaded(true);
 } catch (error: any) {
   addLog(`Pyodide loading error: ${error.message}`);
-  setGraphError(`Failed to load Python environment: ${error.message}`);
+  //setGraphError(`Failed to load Python environment: ${error.message}`);
 } finally {
   setPyodideLoading(false);
 }
@@ -143,7 +143,7 @@ document.head.appendChild(script);
 addLog('Plotly script loaded successfully');
 } catch (error: any) {
 addLog(`Plotly loading error: ${error.message}`);
-setGraphError(`Failed to load Plotly script: ${error.message}`);
+//setGraphError(`Failed to load Plotly script: ${error.message}`);
 }
 };
 
@@ -195,13 +195,13 @@ try {
   // Ensure Pyodide is loaded
   await loadPyodideEnv();
   if (!pyodideLoaded) {
-    throw new Error('Failed to load Python environment');
+    //throw new Error('Failed to load Python environment');
   }
 
   // Ensure Plotly is available in the browser
   await loadPlotlyScript();
   if (!window.Plotly) {
-    throw new Error('Plotly not available in browser environment');
+    //throw new Error('Plotly not available in browser environment');
   }
 
   const pyodide = window.pyodide;
