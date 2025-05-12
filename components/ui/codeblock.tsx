@@ -156,7 +156,7 @@ if (typeof window === 'undefined') {
 return
 }
 const fileExtension = programmingLanguages[language] || '.file'
-const suggestedFileName = file-${generateId()}${fileExtension}
+const suggestedFileName = "file-${generateId()}${fileExtension}"
 const fileName = window.prompt('Enter file name', suggestedFileName)
 if (!fileName) {
 // User pressed cancel on prompt.
