@@ -6,7 +6,7 @@ import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard';
 import { Button } from '@/components/ui/button';
 import { generateId } from 'ai';
 import { Check, Copy, Download, PlayCircle } from 'lucide-react';
-import PlotlyGraph from '@/components/ui/PlotlyGrapj';
+import PlotlyGraph from '@/components/ui/PlotlyGraph';
 
 interface Props {
 language: string;
