@@ -402,7 +402,7 @@ function decodeBase64Float64(bdata: string): Float64Array {
   }
   return new Float64Array(buffer);
 }
-const graph_data = JSON.parse(figureData);
+const graph_data = figureData.data;
 const graph_data_json = JSON.parse(graph_data[0]);
 addLog(`Graph Data : ${JSON.stringify(graph_data_json)}`)
 // Replace with your actual bdata strings
