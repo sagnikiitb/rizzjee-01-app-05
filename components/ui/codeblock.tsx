@@ -6,6 +6,7 @@ import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard';
 import { Button } from '@/components/ui/button';
 import { generateId } from 'ai';
 import { Check, Copy, Download, PlayCircle } from 'lucide-react';
+import PlotlyGraph from '@/components/ui/PlotlyGrapj';
 
 interface Props {
 language: string;
@@ -64,6 +65,8 @@ const [graphError, setGraphError] = useState<string | null>(null);
 const [pyodideLoaded, setPyodideLoaded] = useState(false);
 const [pyodideLoading, setPyodideLoading] = useState(false);
 const [logs, setLogs] = useState<string[]>([]);
+var plot_data: any;
+var plot_layout: any;
 
 // ----------------------------------------------------------------------------
 // Function to add a log entry with timestamp.
@@ -416,7 +419,12 @@ const graph_name = graph_data_json.name;
 // Decode the data
 const x = Array.from(decodeBase64Float64(xB64));
 const y = Array.from(decodeBase64Float64(yB64));
-console.log(x)
+console.log(`Data Components`);
+console.log(x);
+console.log(y);
+console.log(graph_type);
+console.log(graph_mode);
+console.log(graph_name);
 // Plotly trace
 const trace = {
   x: x,
@@ -434,7 +442,13 @@ const trace = {
 //};
 
 // Render the plot
-window.Plotly.newPlot(graphId, [trace], figureData.layout || {});
+console.log(`window.Plotly params`);
+console.log(graphId);
+console.log([trace]);
+console.log(figureData.layout);
+//window.Plotly.newPlot(graphId, [trace], figureData.layout || {});
+plot_data = [trace];
+plot_layout = figureData.layout;
     //useEffect(() => {
     //if (graphVisible) {
      // window.Plotly.react(graphId, [trace], figureData.layout || {});
@@ -625,7 +639,11 @@ fontFamily: 'var(--font-mono)'
 
       {graphVisible && (
         <div className="border border-gray-200 rounded-md bg-white">
-          <div id={graphId} className="w-full h-96 p-4"></div>
+          <PlotlyGraph
+            data={plot_data}
+            layout={plot_layout}
+            graphVisible={graphVisible}
+            />
         </div>
       )}
     </div>
