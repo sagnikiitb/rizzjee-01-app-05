@@ -6,7 +6,7 @@ interface PlotlyGraphProps {
   layout?: Record<string, any>;
   graphVisible?: boolean;
 }
-
+var plotly: any;
 const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
   graphId,
   data, 
@@ -24,7 +24,7 @@ const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
       console.log(`What is graphRef.current  ?`);
       console.log(graphRef.current);
       // Check if Plotly is available in the window object
-      const plotly = (window as any).Plotly;
+      plotly = (window as any).Plotly;
       if (plotly) {
         // Create a new plot or update existing one
         plotly.newPlot(graphId, data, layout || {});
