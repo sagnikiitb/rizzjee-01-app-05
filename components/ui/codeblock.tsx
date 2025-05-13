@@ -363,8 +363,8 @@ async function executePythonCode() {
     const rawResult = await pyodide.runPythonAsync(extractorCode);
     //addLog(`Raw Result : ${rawResult}`);
     const jsonResult = JSON.parse(rawResult);
-    addLog(`JSON Result DATA : ${JSON.stringify(jsonResult.data)}`);
-    addLog(`JSON Result LAYOUT : ${JSON.stringify(jsonResult.layout)}`);
+    //addLog(`JSON Result DATA : ${JSON.stringify(jsonResult.data)}`);
+    //addLog(`JSON Result LAYOUT : ${JSON.stringify(jsonResult.layout)}`);
     return jsonResult
   } catch (error: any) {
     addLog(`Python execution error: ${error.message}`);
@@ -402,18 +402,20 @@ function decodeBase64Float64(bdata: string): Float64Array {
   }
   return new Float64Array(buffer);
 }
-
+const graph_data = JSON.parse(figureData);
+const graph_data_json = JSON.parse(graph_data[0]);
+addLog(`Graph Data : ${JSON.stringify(graph_data_json)}`)
 // Replace with your actual bdata strings
-const xB64 = figureData.data.x.bdata;
-const yB64 = figureData.data.y.bdata;
-const graph_type = figureData.data.type;
-const graph_mode = figureData.data.mode;
-const graph_name = figureData.data.name;
+const xB64 = graph_data_json.x.bdata;
+const yB64 = graph_data_json.y.bdata;
+const graph_type = graph_data_json.type;
+const graph_mode = graph_data_json.mode;
+const graph_name = graph_data_json.name;
 
 // Decode the data
 const x = Array.from(decodeBase64Float64(xB64));
 const y = Array.from(decodeBase64Float64(yB64));
-
+console.log(x)
 // Plotly trace
 const trace = {
   x: x,
