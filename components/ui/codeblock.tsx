@@ -1,5 +1,5 @@
 'use client';
-import { FC, memo, useState, useEffect } from 'react';
+import React, { FC, memo, useState, useEffect, useRef } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard';
