@@ -388,7 +388,7 @@ async function executePythonCode() {
   //addLog(`Result stored in variable: ${JSON.stringify(result)}`);
 
   addLog('Parsing plot data...');
-   setGraphVisible(true);
+   //setGraphVisible(true);
   const figureData = result;
   //addLog(`Only Fig Data (bd64 encoded): ${JSON.stringify(figureData)}`);
   //addLog('Rendering plot...');
@@ -449,6 +449,7 @@ console.log(figureData.layout);
 //window.Plotly.newPlot(graphId, [trace], figureData.layout || {});
 plot_data = [trace];
 plot_layout = figureData.layout;
+setGraphVisible(true);
     //useEffect(() => {
     //if (graphVisible) {
      // window.Plotly.react(graphId, [trace], figureData.layout || {});
@@ -640,6 +641,7 @@ fontFamily: 'var(--font-mono)'
       {graphVisible && (
         <div className="border border-gray-200 rounded-md bg-white">
           <PlotlyGraph
+            graphId={graphId}
             data={plot_data}
             layout={plot_layout}
             graphVisible={graphVisible}
