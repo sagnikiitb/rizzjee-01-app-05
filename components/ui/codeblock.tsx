@@ -403,8 +403,9 @@ function decodeBase64Float64(bdata: string): Float64Array {
   return new Float64Array(buffer);
 }
 const graph_data = figureData.data;
-const graph_data_json = JSON.parse(graph_data[0]);
-addLog(`Graph Data : ${JSON.stringify(graph_data_json)}`)
+const graph_data_json = graph_data[0];
+//addLog(`Graph Data : ${JSON.stringify(graph_data_json)}`)
+console.log(graph_data_json)
 // Replace with your actual bdata strings
 const xB64 = graph_data_json.x.bdata;
 const yB64 = graph_data_json.y.bdata;
