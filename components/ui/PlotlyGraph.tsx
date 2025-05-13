@@ -39,11 +39,21 @@ const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
   useEffect(() => {
     // Only create the plot if the component is visible and we have data
     if (graphVisible && data && graphRef.current) {
+      console.log(`Is graph visible?`);
+      console.log(graphVisible);
+      console.log(`What is graphRef.current  ?`);
+      console.log(graphRef.current);
       // Check if Plotly is available in the window object
       const plotly = (window as any).Plotly;
       if (plotly) {
         // Create a new plot or update existing one
         plotly.newPlot(graphId, data, layout || {});
+        console.log(`plotly object description`);
+        console.log(plotly);
+        console.log(`Props Description : graphId, data, layout`);
+        console.log(graphId);
+        console.log(data);
+        console.log(layout);
         
         // Clean up function to be called when component unmounts
         return () => {
@@ -60,7 +70,11 @@ const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
     <div>
       {graphVisible && (
         <div className="border border-gray-200 rounded-md bg-white">
-          <div id={graphId} ref={graphRef} className="w-full h-96 p-4"></div>
+          <div id={graphId} ref={graphRef} className="w-full h-96 p-4">
+            Graph to be displayed here {graphId}
+
+          
+          </div>
         </div>
       )}
     </div>
