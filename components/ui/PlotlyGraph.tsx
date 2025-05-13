@@ -1,19 +1,8 @@
-// Add Plotly to the Window interface
-//declare global {
-//  interface Window {
-//    Plotly: {
-//      newPlot: (id: string, data: any[], layout: Record<string, any>) => void;
-//      purge: (id: string) => void;
-//    }
-//  }
-//}
-
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
-
-// Define TypeScript interfaces for component props
 interface PlotlyGraphProps {
   graphId: string;
-  data: any[]; // Could be more specific depending on your Plotly data structure
+  data: any[]; 
   layout?: Record<string, any>;
   graphVisible?: boolean;
 }
@@ -24,19 +13,10 @@ const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
   layout = {}, 
   graphVisible = true 
 }) => {
-  // Generate a unique ID for the graph container
- // const generateId = (): string => {
- //   return Math.random().toString(36).substring(2, 15);
- // };
-  
-  // Create a unique graph ID using useState to keep it stable across renders
-  //const [graphId] = useState<string>(`graph-${generateId()}`);
-  
-  // Create a ref to access the DOM element
   const graphRef = useRef<HTMLDivElement>(null);
-  
-  // Initialize or update the Plotly graph when data, layout, or visibility changes
   useEffect(() => {
+    if (!graphVisible) return;
+    const renderPlot = async () => {
     // Only create the plot if the component is visible and we have data
     if (graphVisible && data && graphRef.current) {
       console.log(`Is graph visible?`);
@@ -54,14 +34,16 @@ const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
         console.log(graphId);
         console.log(data);
         console.log(layout);
-        
+      }
+    }
+    
+    
         // Clean up function to be called when component unmounts
         return () => {
-          if (document.getElementById(graphId)) {
+          if (typeof window !== 'undefined' && plotly) {
             plotly.purge(graphId);
           }
         };
-      }
     }
   }, [graphId, data, layout, graphVisible]);
 
