@@ -36,7 +36,8 @@ const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
         console.log(layout);
       }
     }
-    
+    }
+    renderPlot();
     
         // Clean up function to be called when component unmounts
         return () => {
@@ -44,7 +45,7 @@ const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
             plotly.purge(graphId);
           }
         };
-    }
+    
   }, [graphId, data, layout, graphVisible]);
 
   // Only render the graph container if graphVisible is true
