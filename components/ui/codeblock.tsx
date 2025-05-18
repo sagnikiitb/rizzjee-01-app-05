@@ -412,26 +412,30 @@ console.log(graph_data_json)
 // Replace with your actual bdata strings
 const xB64 = graph_data_json.x.bdata;
 const yB64 = graph_data_json.y.bdata;
-const graph_type = graph_data_json.type;
-const graph_mode = graph_data_json.mode;
-const graph_name = graph_data_json.name;
+const zB64 = graph_data_json.z.bdata ? graph_data_json.z.bdata : -1;
+const graph_type = graph_data_json.type ? graph_data_json.type : "no";
+const graph_mode = graph_data_json.mode ? graph_data_json.mode : "no";
+const graph_name = graph_data_json.name ? grap_data_json.name : "no";
 
 // Decode the data
 const x = Array.from(decodeBase64Float64(xB64));
 const y = Array.from(decodeBase64Float64(yB64));
+if(zB64 !== -1) {const z = Array.from(decodeBase64Float64(zB64);}
 console.log(`Data Components`);
 console.log(x);
 console.log(y);
-console.log(graph_type);
-console.log(graph_mode);
-console.log(graph_name);
+if(zB64 !== -1) {console.log(z);}
+if(graph_type !== "no") {console.log(graph_type);}
+if(graph_mode !== "no") {console.log(graph_mode);}
+if(graph_name !== "no") {console.log(graph_name);}
 // Plotly trace
 const trace = {
   x: x,
   y: y,
-  type: graph_type,
-  mode: graph_mode,
-  name: graph_name
+  ...(zB64 !== -1 ? { z: z } : {}),
+  ...(graph_type !== "no" ? {type: graph_type} : {}),
+  ...(graph_mode !== "no" ? {mode: graph_mode} : {}),
+  ...(graph_name !== "no" ? {name: graph_name} : {})
 };
 
 // Layout (simplified, you can use your full layout object if needed)
