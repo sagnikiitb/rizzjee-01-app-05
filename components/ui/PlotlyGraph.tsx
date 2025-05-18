@@ -7,12 +7,12 @@ import React, { useEffect, useRef, useState } from 'react';
 //  layout?: Partial<Plotly.Layout>;
 //  config?: Partial<Plotly.Config>;
 //};
-type PlotlyGraphProps {
+type PlotlyGraphProps = {
   graphId?: string;
   data: any[]; 
   layout?: Record<string, any>;
   graphVisible?: boolean;
-}
+};
 
 const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
   const plotRef = useRef<HTMLDivElement>(null);
