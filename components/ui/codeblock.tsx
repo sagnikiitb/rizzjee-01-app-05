@@ -415,7 +415,7 @@ const yB64 = graph_data_json.y.bdata;
 const zB64 = graph_data_json.z.bdata ? graph_data_json.z.bdata : -1;
 const graph_type = graph_data_json.type ? graph_data_json.type : "no";
 const graph_mode = graph_data_json.mode ? graph_data_json.mode : "no";
-const graph_name = graph_data_json.name ? grap_data_json.name : "no";
+const graph_name = graph_data_json.name ? graph_data_json.name : "no";
 
 // Decode the data
 const x = Array.from(decodeBase64Float64(xB64));
