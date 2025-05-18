@@ -26,6 +26,9 @@ const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
 
   useEffect(() => {
     if (isPlotlyReady && plotRef.current) {
+      console.log(`Logging in file B data layout`);
+      console.log(data);
+      console.log(layout);
       window.Plotly.newPlot(plotRef.current, data, layout, config);
     }
   }, [isPlotlyReady, data, layout, config]);
