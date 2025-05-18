@@ -12,6 +12,7 @@ type PlotlyGraphProps = {
   data: any[]; 
   layout?: Record<string, any>;
   graphVisible?: boolean;
+  config?: Partial<Plotly.Config>;
 };
 
 const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
