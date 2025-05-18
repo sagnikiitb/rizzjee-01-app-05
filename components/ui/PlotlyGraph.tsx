@@ -10,7 +10,7 @@ type PlotlyGraphProps = {
 
 const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
   const plotRef = useRef<HTMLDivElement>(null);
-  const [isPlotlyReady, setIsPlotlyReady] = useState(false);
+  const [graphVisible, setGraphVisible] = useState(false);
   console.log(`In File B`);
 
   useEffect(() => {
@@ -26,15 +26,15 @@ const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
   }, []);
 
   useEffect(() => {
-    if (isPlotlyReady && plotRef.current) {
+    if (graphVisible && plotRef.current) {
       console.log(`Logging in file B data layout`);
       console.log(data);
       console.log(layout);
       window.Plotly.newPlot(plotRef.current, data, layout, config);
     }
-  }, [isPlotlyReady, data, layout, config]);
+  }, [graphVisible, data, layout, config]);
 
-  return <div ref={plotRef}>{!isPlotlyReady && <p>Loading chart...</p>}</div>;
+  return <div ref={plotRef}>{!graphVisible && <p>Loading chart...</p>}</div>;
 };
 
 export default PlotlyGraph;
