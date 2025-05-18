@@ -420,13 +420,11 @@ const graph_name = graph_data_json.name ? graph_data_json.name : "no";
 // Decode the data
 const x = Array.from(decodeBase64Float64(xB64));
 const y = Array.from(decodeBase64Float64(yB64));
-if(zB64 !== -1) {
-  const z = Array.from(decodeBase64Float64(zB64));
-}
+const z = (zB64 !== -1) ? Array.from(decodeBase64Float64(zB64)) : -1;
 console.log(`Data Components`);
 console.log(x);
 console.log(y);
-if(zB64 !== -1) {
+if(z !== -1) {
   console.log(z);
 }
 if(graph_type !== "no") {
