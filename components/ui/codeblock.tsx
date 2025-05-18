@@ -50,8 +50,8 @@ pyodide: any;
 loadPyodide: any;
 }
 }
-let plot_data: Partial<(window as any).Plotly.PlotData>[];
-let plot_layout: Partial<(window as any).Plotly.Layout>;
+let plot_data: Partial<window.Plotly.PlotData>[];
+let plot_layout: Partial<window.Plotly.Layout>;
 interface PlotlyFigure {
 data: any[];
 layout?: Record<string, any>;
