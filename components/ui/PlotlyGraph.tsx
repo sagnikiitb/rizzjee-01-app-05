@@ -16,7 +16,7 @@ const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
   useEffect(() => {
     const checkPlotly = () => {
       if (typeof window !== 'undefined' && typeof window.Plotly !== 'undefined') {
-        setIsPlotlyReady(true);
+        setGraphVisible(true);
       } else {
         setTimeout(checkPlotly, 100); // retry every 100ms until Plotly is loaded
       }
