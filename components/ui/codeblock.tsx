@@ -442,14 +442,23 @@ if(graph_name !== "no") {
   console.log(graph_name);
 }
 // Plotly trace
-const trace = {
+//const trace = {
+//  x: x,
+//  y: y,
+//  ...(zB64 !== -1 ? { z: z } : {}),
+//  ...(graph_type !== "no" ? {type: graph_type} : {}),
+//  ...(graph_mode !== "no" ? {mode: graph_mode} : {}),
+//  ...(graph_name !== "no" ? {name: graph_name} : {})
+//};
+const trace: Partial<PlotData> = {
   x: x,
   y: y,
-  ...(zB64 !== -1 ? { z: z } : {}),
-  ...(graph_type !== "no" ? {type: graph_type} : {}),
-  ...(graph_mode !== "no" ? {mode: graph_mode} : {}),
-  ...(graph_name !== "no" ? {name: graph_name} : {})
+  ...(Array.isArray(z) ? { z: z } : {}),
+  ...(graph_type !== "no" ? { type: graph_type } : {}),
+  ...(graph_mode !== "no" ? { mode: graph_mode } : {}),
+  ...(graph_name !== "no" ? { name: graph_name } : {})
 };
+
 
 // Layout (simplified, you can use your full layout object if needed)
 //const layout = {
