@@ -465,7 +465,7 @@ console.log(`Final data layout`);
 console.log(plot_data);
 console.log(plot_layout);
 setGraphVisible(true);
-return <PlotlyGraph data={data} layout={layout} />;
+return <PlotlyGraph data={plot_data} layout={plot_layout} />;
     //useEffect(() => {
     //if (graphVisible) {
      // window.Plotly.react(graphId, [trace], figureData.layout || {});
