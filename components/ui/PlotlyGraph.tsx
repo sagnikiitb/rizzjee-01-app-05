@@ -2,11 +2,17 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 
-type PlotlyGraphProps = {
-  data: Partial<Plotly.PlotData>[];
-  layout?: Partial<Plotly.Layout>;
-  config?: Partial<Plotly.Config>;
-};
+//type PlotlyGraphProps = {
+//  data: Partial<Plotly.PlotData>[];
+//  layout?: Partial<Plotly.Layout>;
+//  config?: Partial<Plotly.Config>;
+//};
+type PlotlyGraphProps {
+  graphId?: string;
+  data: any[]; 
+  layout?: Record<string, any>;
+  graphVisible?: boolean;
+}
 
 const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
   const plotRef = useRef<HTMLDivElement>(null);
