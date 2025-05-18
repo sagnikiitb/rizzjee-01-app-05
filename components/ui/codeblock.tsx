@@ -302,18 +302,18 @@ result
 
   addLog('Executing Python code...');
 
-  const TIMEOUT_MS = 300000;
-  const timeoutPromise = new Promise((_, reject) => {
-    setTimeout(
-      () =>
-        reject(
-          new Error(
-            `Timeout: Execution exceeded ${TIMEOUT_MS / 1000}s. Check for infinite loops`
-          )
-        ),
-      TIMEOUT_MS
-    );
-  });
+  //const TIMEOUT_MS = 300000;
+  //const timeoutPromise = new Promise((_, reject) => {
+  //  setTimeout(
+  //    () =>
+  //      reject(
+  //        new Error(
+  //          `Timeout: Execution exceeded ${TIMEOUT_MS / 1000}s. Check for infinite loops`
+  //        )
+  //      ),
+  //    TIMEOUT_MS
+  //  );
+  //});
   function decodeBData(bdata: string, dtype: string): (number[] | bigint[]) {
   const bytes = Uint8Array.from(atob(bdata), c => c.charCodeAt(0));
   const buffer = bytes.buffer;
@@ -465,7 +465,11 @@ console.log(`Final data layout`);
 console.log(plot_data);
 console.log(plot_layout);
 setGraphVisible(true);
-return <PlotlyGraph data={plot_data} layout={plot_layout} />;
+return (
+        <div className="w-full h-[500px] border border-gray-300 rounded-lg shadow-md bg-white">
+        <PlotlyGraph data={plot_data} layout={plot_layout} />
+      </div>
+)
     //useEffect(() => {
     //if (graphVisible) {
      // window.Plotly.react(graphId, [trace], figureData.layout || {});
