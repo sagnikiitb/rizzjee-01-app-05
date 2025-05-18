@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { generateId } from 'ai';
 import { Check, Copy, Download, PlayCircle } from 'lucide-react';
 import PlotlyGraph from '@/components/ui/PlotlyGraph';
-import Plotly from 'plotly.js-dist';
+import Plotly from 'plotly.js-dist-min';
 
 interface Props {
 language: string;
