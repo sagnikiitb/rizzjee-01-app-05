@@ -654,11 +654,7 @@ fontFamily: 'var(--font-mono)'
           </pre>
         </div>
       )}
-      {graphVisible && (
-      <PlotlyGraph data={plot_data} layout={plot_layout} />
-)}
 
-      
     </div>
   )}
 </div>
