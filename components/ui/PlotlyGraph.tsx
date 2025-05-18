@@ -7,15 +7,21 @@ import React, { useEffect, useRef, useState } from 'react';
 //  layout?: Partial<Plotly.Layout>;
 //  config?: Partial<Plotly.Config>;
 //};
+//type PlotlyGraphProps = {
+//  graphId?: string;
+//  data: any[]; 
+//  layout?: Record<string, any>;
+//  graphVisible?: boolean;
+//  config?: Partial<Plotly.Config>;
+//};
+
 type PlotlyGraphProps = {
-  graphId?: string;
   data: any[]; 
   layout?: Record<string, any>;
   graphVisible?: boolean;
-  config?: Partial<Plotly.Config>;
 };
 
-const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
+const PlotlyGraph = ({ data, layout }: PlotlyGraphProps) => {
   const plotRef = useRef<HTMLDivElement>(null);
   const [graphVisible, setGraphVisible] = useState(false);
   console.log(`In File B`);
@@ -39,7 +45,7 @@ const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
       console.log(layout);
       window.Plotly.newPlot(plotRef.current, data, layout, config);
     }
-  }, [graphVisible, data, layout, config]);
+  }, [data]);
 
   return <div ref={plotRef}>{!graphVisible && <p>Loading chart...</p>}</div>;
 };
