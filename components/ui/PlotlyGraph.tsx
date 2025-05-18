@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 type PlotlyGraphProps = {
+  graphVisible?: boolean;
   data: Partial<Plotly.PlotData>[];
   layout?: Partial<Plotly.Layout>;
   graph: string;
