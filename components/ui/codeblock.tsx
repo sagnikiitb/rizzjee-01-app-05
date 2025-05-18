@@ -465,11 +465,11 @@ console.log(`Final data layout`);
 console.log(plot_data);
 console.log(plot_layout);
 setGraphVisible(true);
-return (
-        <div className="w-full h-[500px] border border-gray-300 rounded-lg shadow-md bg-white">
-        <PlotlyGraph data={plot_data} layout={plot_layout} graph={graphId} />
-      </div>
-);
+//return (
+//        <div className="w-full h-[500px] border border-gray-300 rounded-lg shadow-md bg-white">
+//        <PlotlyGraph data={plot_data} layout={plot_layout} graph={graphId} />
+//      </div>
+//);
     //useEffect(() => {
     //if (graphVisible) {
      // window.Plotly.react(graphId, [trace], figureData.layout || {});
@@ -657,7 +657,9 @@ fontFamily: 'var(--font-mono)'
           </pre>
         </div>
       )}
-
+        <div className="w-full h-[500px] border border-gray-300 rounded-lg shadow-md bg-white">
+        <PlotlyGraph data={plot_data} layout={plot_layout} graph={graphId} />
+      </div>
 
       
     </div>
