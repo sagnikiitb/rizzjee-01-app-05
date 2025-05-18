@@ -421,7 +421,7 @@ const graph_name = graph_data_json.name ? grap_data_json.name : "no";
 const x = Array.from(decodeBase64Float64(xB64));
 const y = Array.from(decodeBase64Float64(yB64));
 if(zB64 !== -1) {
-  const z = Array.from(decodeBase64Float64(zB64);
+  const z = Array.from(decodeBase64Float64(zB64));
 }
 console.log(`Data Components`);
 console.log(x);
