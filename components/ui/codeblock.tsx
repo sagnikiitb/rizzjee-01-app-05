@@ -50,7 +50,8 @@ pyodide: any;
 loadPyodide: any;
 }
 }
-
+let plot_data: Partial<(window as any).Plotly.PlotData>[];
+let plot_layout: Partial<(window as any).Plotly.Layout>;
 interface PlotlyFigure {
 data: any[];
 layout?: Record<string, any>;
@@ -65,8 +66,7 @@ const [graphError, setGraphError] = useState<string | null>(null);
 const [pyodideLoaded, setPyodideLoaded] = useState(false);
 const [pyodideLoading, setPyodideLoading] = useState(false);
 const [logs, setLogs] = useState<string[]>([]);
-var plot_data: any;
-var plot_layout: any;
+
 
 // ----------------------------------------------------------------------------
 // Function to add a log entry with timestamp.
