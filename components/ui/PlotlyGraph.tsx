@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import Plotly from 'plotly.js-dist-min';
+import Plotly from 'plotly.js-dist';
 
 interface PlotlyGraphProps {
   data: Plotly.Data[];
