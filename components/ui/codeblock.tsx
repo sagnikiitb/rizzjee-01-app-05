@@ -655,7 +655,7 @@ fontFamily: 'var(--font-mono)'
         </div>
       )}
       {graphVisible && (
-      return <PlotlyGraph data={plot_data} layout={plot_layout} />;
+      <PlotlyGraph data={plot_data} layout={plot_layout} />;
 )}
 
       
