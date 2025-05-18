@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { generateId } from 'ai';
 import { Check, Copy, Download, PlayCircle } from 'lucide-react';
 import PlotlyGraph from '@/components/ui/PlotlyGraph';
+import Plotly from 'plotly.js-dist';
 
 interface Props {
 language: string;
@@ -134,21 +135,21 @@ if (window.Plotly) {
 // Already loaded
 return;
 }
-addLog('Loading Plotly JS from CDN...');
-try {
-const script = document.createElement('script');
-script.src = 'https://cdn.plot.ly/plotly-3.0.1.min.js';
-await new Promise((resolve, reject) => {
-script.onload = resolve;
-script.onerror = reject;
-document.head.appendChild(script);
-});
-addLog('Plotly script loaded successfully');
-} catch (error: any) {
-addLog(`Plotly loading error: ${error.message}`);
+//addLog('Loading Plotly JS from CDN...');
+//try {
+//const script = document.createElement('script');
+//script.src = 'https://cdn.plot.ly/plotly-3.0.1.min.js';
+//await new Promise((resolve, reject) => {
+//script.onload = resolve;
+//script.onerror = reject;
+//document.head.appendChild(script);
+//});
+//addLog('Plotly script loaded successfully');
+//} catch (error: any) {
+//addLog(`Plotly loading error: ${error.message}`);
 //setGraphError(`Failed to load Plotly script: ${error.message}`);
-}
-};
+//}
+//};
 
 // ----------------------------------------------------------------------------
 // Function to download code as a file.
@@ -475,7 +476,7 @@ return <PlotlyGraph data={plot_data} layout={plot_layout} />;
 }
 
 run(); // <-- this will now contain all logic and logs
-
+console.log("run() is runned");
   //const result: any = await Promise.race([executionPromise, timeoutPromise]);
   //const result: any = executionFunction();
   //addLog(`Result outside code block: ${result}`);
@@ -653,6 +654,9 @@ fontFamily: 'var(--font-mono)'
           </pre>
         </div>
       )}
+      {graphVisible && (
+      return <PlotlyGraph data={plot_data} layout={plot_layout} />;
+)}
 
       
     </div>
