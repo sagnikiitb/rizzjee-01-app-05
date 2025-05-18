@@ -410,85 +410,79 @@ function decodeBase64Float64(bdata: string): Float64Array {
   }
   return new Float64Array(buffer);
 }
-const graph_data = figureData.data;
-const graph_data_json = graph_data[0];
-//addLog(`Graph Data : ${JSON.stringify(graph_data_json)}`)
-console.log(graph_data_json)
-// Replace with your actual bdata strings
-const xB64 = graph_data_json.x.bdata;
-const yB64 = graph_data_json.y.bdata;
-const zB64 = graph_data_json.z?.bdata != null ? graph_data_json.z.bdata : -1;
-const graph_type = graph_data_json.type !=null ? graph_data_json.type : "no";
-const graph_mode = graph_data_json.mode !=null ? graph_data_json.mode : "no";
-const graph_name = graph_data_json.name !=null ? graph_data_json.name : "no";
+  function reshapeZto2D(x: number[], y: number[], z: number[]): number[][] {
+  const xvals = [...new Set(x)];
+  const yvals = [...new Set(y)];
+  const nx = xvals.length;
+  const ny = yvals.length;
 
-// Decode the data
-const x = Array.from(decodeBase64Float64(xB64));
-const y = Array.from(decodeBase64Float64(yB64));
-const z = (zB64 !== -1) ? Array.from(decodeBase64Float64(zB64)) : -1;
-console.log(`Data Components`);
-console.log(x);
-console.log(y);
-if(z !== -1) {
-  console.log(z);
-}
-if(graph_type !== "no") {
-  console.log(graph_type);
-}
-if(graph_mode !== "no") {
-  console.log(graph_mode);
-}
-if(graph_name !== "no") {
-  console.log(graph_name);
-}
-// Plotly trace
-//const trace = {
-//  x: x,
-//  y: y,
-//  ...(zB64 !== -1 ? { z: z } : {}),
-//  ...(graph_type !== "no" ? {type: graph_type} : {}),
-//  ...(graph_mode !== "no" ? {mode: graph_mode} : {}),
-//  ...(graph_name !== "no" ? {name: graph_name} : {})
-//};
-const trace: Partial<PlotData> = {
-  x: x,
-  y: y,
-  ...(Array.isArray(z) ? { z: z } : {}),
-  ...(graph_type !== "no" ? { type: graph_type } : {}),
-  ...(graph_mode !== "no" ? { mode: graph_mode } : {}),
-  ...(graph_name !== "no" ? { name: graph_name } : {})
-};
+  if (x.length !== nx * ny || y.length !== nx * ny || z.length !== nx * ny) {
+    throw new Error("x, y, z do not form a meshgrid surface (dimensions mismatch)");
+  }
 
+  const z2D: number[][] = [];
+  for (let i = 0; i < ny; i++) {
+    const row: number[] = [];
+    for (let j = 0; j < nx; j++) {
+      row.push(z[i * nx + j]);  // row-major order
+    }
+    z2D.push(row);
+  }
+  return z2D;
+}
 
-// Layout (simplified, you can use your full layout object if needed)
-//const layout = {
-//  title: 'Plot of y = 3sin(5x)',
-//  xaxis: { title: 'x' },
-//  yaxis: { title: 'y' }
-//};
+// === Extract and Decode Data ===
+const graphData = figureData.data?.[0];
+if (!graphData) throw new Error("Missing graph data");
 
-// Render the plot
-console.log(`window.Plotly params`);
-console.log(graphId);
-console.log([trace]);
-console.log(figureData.layout);
-//window.Plotly.newPlot(graphId, [trace], figureData.layout || {});
+const x = Array.from(decodeBase64Float64(graphData.x?.bdata));
+const y = Array.from(decodeBase64Float64(graphData.y?.bdata));
+const z = graphData.z?.bdata ? Array.from(decodeBase64Float64(graphData.z.bdata)) : null;
+
+const type = graphData.type ?? "scatter";
+const mode = graphData.mode ?? undefined;
+const name = graphData.name ?? undefined;
+
+// === Handle 3D Surface Plot (fix z-shape if needed) ===
+let trace: Partial<PlotData>;
+
+if (type === "surface" && z) {
+  const z2D = reshapeZto2D(x, y, z);
+  const xvals = [...new Set(x)];
+  const yvals = [...new Set(y)];
+
+  trace = {
+    x: xvals,
+    y: yvals,
+    z: z2D,
+    type: "surface",
+    name,
+  };
+} else {
+  // Assume 2D line/scatter plot
+  trace = {
+    x,
+    y,
+    type,
+    mode,
+    name,
+    ...(z ? { z } : {})  // Just in case z is relevant in other types
+  };
+}
+
+// === Assign to global state or use for plotting ===
 plot_data = [trace];
-plot_layout = figureData.layout;
-console.log(`Final data layout`);
-console.log(plot_data);
-console.log(plot_layout);
+plot_layout = figureData.layout ?? {};
 setGraphVisible(true);
-//return (
-//        <div className="w-full h-[500px] border border-gray-300 rounded-lg shadow-md bg-white">
-//        <PlotlyGraph data={plot_data} layout={plot_layout} graph={graphId} />
-//      </div>
-//);
-    //useEffect(() => {
-    //if (graphVisible) {
-     // window.Plotly.react(graphId, [trace], figureData.layout || {});
-    //}
-  //}, [graphVisible, figureData, graphId]);
+
+console.log("Trace to plot:", trace);
+console.log("Layout:", plot_layout);
+
+//const graph_data = figureData.data;
+//const graph_data_json = graph_data[0];
+//addLog(`Graph Data : ${JSON.stringify(graph_data_json)}`)
+//console.log(graph_data_json)
+
  
 }
 
