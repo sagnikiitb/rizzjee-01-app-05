@@ -653,6 +653,9 @@ fontFamily: 'var(--font-mono)'
           </pre>
         </div>
       )}
+      <div className="w-full h-[500px] border border-gray-300 rounded-lg shadow-md bg-white">
+        <PlotlyGraph data={plot_data} layout={plot_layout} />
+      </div>
 
       
     </div>
