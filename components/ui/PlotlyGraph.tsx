@@ -1,67 +1,36 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-interface PlotlyGraphProps {
-  graphId: string;
-  data: any[]; 
-  layout?: Record<string, any>;
-  graphVisible?: boolean;
-}
-var plotly: any;
-const PlotlyGraph: React.FC<PlotlyGraphProps> = ({
-  graphId,
-  data, 
-  layout = {}, 
-  graphVisible = true 
-}) => {
-  const graphRef = useRef<HTMLDivElement>(null);
+
+import React, { useEffect, useRef, useState } from 'react';
+
+type PlotlyGraphProps = {
+  data: Partial<Plotly.PlotData>[];
+  layout?: Partial<Plotly.Layout>;
+  config?: Partial<Plotly.Config>;
+};
+
+const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
+  const plotRef = useRef<HTMLDivElement>(null);
+  const [isPlotlyReady, setIsPlotlyReady] = useState(false);
+
   useEffect(() => {
-    if (!graphVisible) return;
-    const renderPlot = async () => {
-    // Only create the plot if the component is visible and we have data
-    if (graphVisible && data && graphRef.current) {
-      console.log(`Is graph visible?`);
-      console.log(graphVisible);
-      console.log(`What is graphRef.current  ?`);
-      console.log(graphRef.current);
-      // Check if Plotly is available in the window object
-      plotly = (window as any).Plotly;
-      if (plotly) {
-        // Create a new plot or update existing one
-        plotly.newPlot(graphId, data, layout || {});
-        console.log(`plotly object description`);
-        console.log(plotly);
-        console.log(`Props Description : graphId, data, layout`);
-        console.log(graphId);
-        console.log(data);
-        console.log(layout);
+    const checkPlotly = () => {
+      if (typeof window !== 'undefined' && typeof window.Plotly !== 'undefined') {
+        setIsPlotlyReady(true);
+      } else {
+        setTimeout(checkPlotly, 100); // retry every 100ms until Plotly is loaded
       }
-    }
-    }
-    renderPlot();
-    
-        // Clean up function to be called when component unmounts
-        return () => {
-          if (typeof window !== 'undefined' && plotly) {
-            plotly.purge(graphId);
-          }
-        };
-    
-  }, [graphId, data, layout, graphVisible]);
+    };
 
-  // Only render the graph container if graphVisible is true
-  return (
-    <div>
-      {graphVisible && (
-        <div className="border border-gray-200 rounded-md bg-white">
-          <div id={graphId} ref={graphRef} className="w-full h-96 p-4">
-            Graph to be displayed here {graphId}
+    checkPlotly();
+  }, []);
 
-          
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  useEffect(() => {
+    if (isPlotlyReady && plotRef.current) {
+      window.Plotly.newPlot(plotRef.current, data, layout, config);
+    }
+  }, [isPlotlyReady, data, layout, config]);
+
+  return <div ref={plotRef}>{!isPlotlyReady && <p>Loading chart...</p>}</div>;
 };
 
 export default PlotlyGraph;
