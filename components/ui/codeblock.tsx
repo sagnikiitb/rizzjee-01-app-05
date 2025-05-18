@@ -7,6 +7,11 @@ import { Button } from '@/components/ui/button';
 import { generateId } from 'ai';
 import { Check, Copy, Download, PlayCircle } from 'lucide-react';
 import PlotlyGraph from '@/components/ui/PlotlyGraph';
+import type { PlotData, Layout } from 'plotly.js';
+
+let plot_data: Partial<PlotData>[];
+let plot_layout: Partial<Layout>;
+
 
 interface Props {
 language: string;
@@ -50,8 +55,8 @@ pyodide: any;
 loadPyodide: any;
 }
 }
-let plot_data: Partial<window.Plotly.PlotData>[];
-let plot_layout: Partial<window.Plotly.Layout>;
+//let plot_data: Partial<window.Plotly.PlotData>[];
+//let plot_layout: Partial<window.Plotly.Layout>;
 interface PlotlyFigure {
 data: any[];
 layout?: Record<string, any>;
