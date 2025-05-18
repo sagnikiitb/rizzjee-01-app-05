@@ -1,40 +1,20 @@
-'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+import Plotly from 'plotly.js-dist-min';
 
-type PlotlyGraphProps = {
-  data: Partial<Plotly.PlotData>[];
-  layout?: Partial<Plotly.Layout>;
-  config?: Partial<Plotly.Config>;
-};
+interface PlotlyGraphProps {
+  data: Plotly.Data[];
+  layout: Partial<Plotly.Layout>;
+}
 
-const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
+export default function PlotlyGraph({ data, layout }: PlotlyGraphProps) {
   const plotRef = useRef<HTMLDivElement>(null);
-  const [isPlotlyReady, setIsPlotlyReady] = useState(false);
-  console.log(`In File B`);
 
   useEffect(() => {
-    const checkPlotly = () => {
-      if (typeof window !== 'undefined' && typeof window.Plotly !== 'undefined') {
-        setIsPlotlyReady(true);
-      } else {
-        setTimeout(checkPlotly, 100); // retry every 100ms until Plotly is loaded
-      }
-    };
-
-    checkPlotly();
-  }, []);
-
-  useEffect(() => {
-    if (isPlotlyReady && plotRef.current) {
-      console.log(`Logging in file B data layout`);
-      console.log(data);
-      console.log(layout);
-      window.Plotly.newPlot(plotRef.current, data, layout, config);
+    if (plotRef.current) {
+      Plotly.newPlot(plotRef.current, data, layout, { responsive: true });
     }
-  }, [isPlotlyReady, data, layout, config]);
+  }, [data, layout]);
 
-  return <div ref={plotRef}>{!isPlotlyReady && <p>Loading chart...</p>}</div>;
-};
-
-export default PlotlyGraph;
+  return <div ref={plotRef} style={{ width: '100%', height: '100%' }} />;
+}
