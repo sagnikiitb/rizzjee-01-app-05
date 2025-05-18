@@ -16,13 +16,13 @@ import React, { useEffect, useRef, useState } from 'react';
 //};
 
 type PlotlyGraphProps = {
-  graphId: string;
+  graph: string;
   data: any[]; 
   layout?: Record<string, any>;
   graphVisible?: boolean;
 };
 
-const PlotlyGraph = ({ data, layout, graphId }: PlotlyGraphProps) => {
+const PlotlyGraph = ({ data, layout, graph }: PlotlyGraphProps) => {
   const plotRef = useRef<HTMLDivElement>(null);
   const [graphVisible, setGraphVisible] = useState(false);
   console.log(`In File B`);
@@ -44,7 +44,7 @@ const PlotlyGraph = ({ data, layout, graphId }: PlotlyGraphProps) => {
       console.log(`Logging in file B data layout`);
       console.log(data);
       console.log(layout);
-      window.Plotly.newPlot(plotRef.current, data, layout, graphId);
+      window.Plotly.newPlot(plotRef.current, data, layout, graph);
     }
   }, [data]);
 
