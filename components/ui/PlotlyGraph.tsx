@@ -16,9 +16,9 @@ import React, { useEffect, useRef, useState } from 'react';
 //};
 
 type PlotlyGraphProps = {
-  graph: string;
   data: any[]; 
   layout?: Record<string, any>;
+  graph: string;
   graphVisible?: boolean;
 };
 
