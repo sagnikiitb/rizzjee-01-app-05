@@ -11,6 +11,7 @@ type PlotlyGraphProps = {
 const PlotlyGraph = ({ data, layout, config }: PlotlyGraphProps) => {
   const plotRef = useRef<HTMLDivElement>(null);
   const [isPlotlyReady, setIsPlotlyReady] = useState(false);
+  console.log(`In File B`);
 
   useEffect(() => {
     const checkPlotly = () => {
