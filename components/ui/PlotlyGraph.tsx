@@ -46,7 +46,7 @@ const PlotlyGraph = ({ data, layout, graph }: PlotlyGraphProps) => {
       console.log(layout);
       window.Plotly.newPlot(plotRef.current, data, layout, graph);
     }
-  }, [data]);
+  }, [data, layout, graph]);
 
   return <div ref={plotRef}>{!graphVisible && <p>Loading chart...</p>}</div>;
 };
