@@ -4,7 +4,7 @@ import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
 import { Mistral } from '@mistralai/mistralai'
 import { Message } from 'ai'
-import { ArrowUp, MessageCirclePlus, Paperclip, Square, Mic } from 'lucide-react'
+import { ArrowUp, MessageCirclePlus, Mic, MicOff, Paperclip, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
@@ -29,94 +29,28 @@ interface ChatPanelProps {
 }
 
 const LANGUAGES = [
-  { label: 'Hinglish', value: 'Hinglish' },
-  { label: 'English', value: 'English' },
-  { label: 'Hindi', value: 'Hindi (देवनागरी)' },
-  { label: 'Bhojpuri', value: 'Bhojpuri' },
-  { label: 'Punjabi', value: 'Punjabi' },
-  { label: 'Marathi', value: 'Marathi' },
-  { label: 'Gujarati', value: 'Gujarati' },
-  { label: 'Tamil', value: 'Tamil' },
-  { label: 'Telugu', value: 'Telugu' },
-  { label: 'Kannada', value: 'Kannada' },
-  { label: 'Malayalam', value: 'Malayalam' },
-  { label: 'Urdu', value: 'Urdu (اردو)' },
-  { label: 'Bengali', value: 'Bengali (বাংলা)' },
-  { label: 'Odia', value: 'Odia (ଓଡ଼ିଆ)' },
-  { label: 'Assamese', value: 'Assamese (অসমীয়া)' },
-  { label: 'Maithili', value: 'Maithili' },
-  { label: 'Dogri', value: 'Dogri' },
-  { label: 'Kashmiri', value: 'Kashmiri (کٕشمیری)' },
-  { label: 'Manipuri', value: 'Manipuri (মণিপুরী)' },
-  { label: 'Santali', value: 'Santali (ᱥᱟᱱᱛᱟᱲᱤ)' },
-  { label: 'Sindhi', value: 'Sindhi (سنڌي)' }
+  { label: 'Hinglish', value: 'Hinglish', code: 'en' },
+  { label: 'English', value: 'English', code: 'en' },
+  { label: 'Hindi', value: 'Hindi (देवनागरी)', code: 'hi' },
+  { label: 'Bhojpuri', value: 'Bhojpuri', code: 'hi' },
+  { label: 'Punjabi', value: 'Punjabi', code: 'pa' },
+  { label: 'Marathi', value: 'Marathi', code: 'mr' },
+  { label: 'Gujarati', value: 'Gujarati', code: 'gu' },
+  { label: 'Tamil', value: 'Tamil', code: 'ta' },
+  { label: 'Telugu', value: 'Telugu', code: 'te' },
+  { label: 'Kannada', value: 'Kannada', code: 'kn' },
+  { label: 'Malayalam', value: 'Malayalam', code: 'ml' },
+  { label: 'Urdu', value: 'Urdu (اردو)', code: 'ur' },
+  { label: 'Bengali', value: 'Bengali (বাংলা)', code: 'bn' },
+  { label: 'Odia', value: 'Odia (ଓଡ଼ିଆ)', code: 'or' },
+  { label: 'Assamese', value: 'Assamese (অসমীয়া)', code: 'as' },
+  { label: 'Maithili', value: 'Maithili', code: 'hi' },
+  { label: 'Dogri', value: 'Dogri', code: 'hi' },
+  { label: 'Kashmiri', value: 'Kashmiri (کٕشمیری)', code: 'ks' },
+  { label: 'Manipuri', value: 'Manipuri (মণিপুরী)', code: 'mni' },
+  { label: 'Santali', value: 'Santali (ᱥᱟᱱᱛᱟᱲᱤ)', code: 'sat' },
+  { label: 'Sindhi', value: 'Sindhi (سنڌي)', code: 'sd' }
 ]
-
-// Voice recorder hook for audio capture and sending to /api/transcribe
-function useVoiceRecorder(onTranscription: (text: string) => void, selectedLanguageCode: string) {
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const [isRecording, setIsRecording] = useState(false)
-
-  const startRecording = async () => {
-    if (!navigator.mediaDevices || !window.MediaRecorder) {
-      alert('Audio recording not supported in this browser.')
-      return
-    }
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
-      audioChunksRef.current = []
-
-      mediaRecorderRef.current.ondataavailable = e => {
-        if (e.data.size > 0) {
-          audioChunksRef.current.push(e.data)
-        }
-      }
-
-      mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        await sendAudioToTranscribe(audioBlob)
-      }
-
-      mediaRecorderRef.current.start()
-      setIsRecording(true)
-    } catch (err) {
-      alert('Failed to start recording: ' + err)
-    }
-  }
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
-    }
-  }
-
-  const sendAudioToTranscribe = async (audioBlob: Blob) => {
-    try {
-      const formData = new FormData()
-      formData.append('file', audioBlob, 'recording.webm')
-      // Send ISO code or similar — map selectedLanguage to whisper language code if needed
-      formData.append('language', selectedLanguageCode)
-
-      const res = await fetch('/api/transcribe', {
-        method: 'POST',
-        body: formData
-      })
-      const data = await res.json()
-      if (res.ok) {
-        onTranscription(data.text)
-      } else {
-        toast.error(data.error || 'Failed to transcribe audio.')
-      }
-    } catch (error) {
-      toast.error('Error sending audio: ' + (error as Error).message)
-    }
-  }
-
-  return { isRecording, startRecording, stopRecording }
-}
 
 export function ChatPanel({
   input,
@@ -139,205 +73,469 @@ export function ChatPanel({
   const [selectedLanguage, setSelectedLanguage] = useState('Hinglish')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Voice recording states
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTimeout, setRecordingTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([])
+  const [isTranscribing, setIsTranscribing] = useState(false)
 
-  // Map UI language selection to Whisper language code
-  const languageCodeMap: Record<string, string> = {
-    Hinglish: 'en', // approximate
-    English: 'en',
-    Hindi: 'hi',
-    Bhojpuri: 'bh',
-    Punjabi: 'pa',
-    Marathi: 'mr',
-    Gujarati: 'gu',
-    Tamil: 'ta',
-    Telugu: 'te',
-    Kannada: 'kn',
-    Malayalam: 'ml',
-    Urdu: 'ur',
-    Bengali: 'bn',
-    Odia: 'or',
-    Assamese: 'as',
-    Maithili: 'mai',
-    Dogri: 'doi',
-    Kashmiri: 'ks',
-    Manipuri: 'mni',
-    Santali: 'sat',
-    Sindhi: 'sd'
+  const handleCompositionStart = () => setIsComposing(true)
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false)
+    setEnterDisabled(true)
+    setTimeout(() => {
+      setEnterDisabled(false)
+    }, 300)
   }
 
-  // Initialize voice recorder hook with current selected language code
-  const { isRecording, startRecording, stopRecording } = useVoiceRecorder(
-    transcribedText => {
-      append({
-        role: 'user',
-        content: `${transcribedText}\n\nPlease answer in ${selectedLanguage} only.`
-      })
-    },
-    languageCodeMap[selectedLanguage] || 'en'
-  )
+  const handleNewChat = () => {
+    setMessages([])
+    router.push('/')
+  }
 
-  //... continuing to next message for full code
-  useEffect(() => {
-    if (messages.length === 0 && !isLoading) {
-      setShowEmptyScreen(true)
+  // Get language code for transcription API
+  const getLanguageCode = (languageValue: string): string => {
+    const language = LANGUAGES.find(lang => lang.value === languageValue)
+    return language?.code || 'en'
+  }
+
+  // Start voice recording
+  const startRecording = async () => {
+    try {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      
+      // Create media recorder
+      const recorder = new MediaRecorder(stream)
+      setMediaRecorder(recorder)
+      setAudioChunks([])
+      
+      // Set up event handlers
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          setAudioChunks(prev => [...prev, event.data])
+        }
+      }
+      
+      // Auto-stop recording after 30 seconds
+      const timeout = setTimeout(() => {
+        if (recorder.state === 'recording') {
+          stopRecording()
+          toast.info('Recording stopped after 30 seconds')
+        }
+      }, 30000)
+      
+      setRecordingTimeout(timeout)
+      
+      // Start recording
+      recorder.start(200)
+      setIsRecording(true)
+      toast.success('Recording started')
+    } catch (error) {
+      console.error('Error accessing microphone:', error)
+      toast.error('Failed to access microphone')
+    }
+  }
+  
+  // Stop voice recording and transcribe
+  const stopRecording = async () => {
+    if (!mediaRecorder) return
+    
+    // Clear auto-stop timeout
+    if (recordingTimeout) {
+      clearTimeout(recordingTimeout)
+      setRecordingTimeout(null)
+    }
+    
+    // Only proceed if we're actually recording
+    if (mediaRecorder.state === 'recording') {
+      // Stop the recorder
+      mediaRecorder.stop()
+      setIsRecording(false)
+      
+      // Stop all audio tracks
+      mediaRecorder.stream.getTracks().forEach(track => track.stop())
+      
+      // Wait for final chunks to be collected
+      setTimeout(async () => {
+        if (audioChunks.length === 0) {
+          toast.error('No audio recorded')
+          return
+        }
+        
+        setIsTranscribing(true)
+        
+        try {
+          // Create audio blob
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
+          
+          // Create form data for API request
+          const formData = new FormData()
+          formData.append('file', audioBlob, 'recording.webm')
+          formData.append('language', getLanguageCode(selectedLanguage))
+          
+          // Send to transcription API
+          const response = await fetch('/api/transcribe', {
+            method: 'POST',
+            body: formData
+          })
+          
+          if (!response.ok) {
+            throw new Error('Transcription failed')
+          }
+          
+          const result = await response.json()
+          
+          if (result.text) {
+            // Append transcribed text to current input
+            const newValue = input ? `${input} ${result.text}`.trim() : result.text
+            handleInputChange({
+              target: { value: newValue }
+            } as React.ChangeEvent<HTMLTextAreaElement>)
+            
+            // Focus the input field
+            if (inputRef.current) {
+              inputRef.current.focus()
+            }
+            
+            toast.success('Transcription added to input')
+          } else {
+            toast.warning('No speech detected')
+          }
+        } catch (error) {
+          console.error('Transcription error:', error)
+          toast.error('Failed to transcribe audio')
+        } finally {
+          setIsTranscribing(false)
+          setAudioChunks([])
+        }
+      }, 300)
+    }
+  }
+  
+  // Toggle recording state
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording()
     } else {
-      setShowEmptyScreen(false)
+      startRecording()
     }
-  }, [messages, isLoading])
+  }
 
+  // Clean up recording resources on unmount
   useEffect(() => {
-    if (!isLoading && isFirstRender.current) {
-      isFirstRender.current = false
-    }
-  }, [isLoading])
-
-  // Handle enter key submit but allow shift+enter for new lines, also block if composition active
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (isComposing) return
-
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      if (!enterDisabled) {
-        handleSubmit(e as any)
+    return () => {
+      if (recordingTimeout) {
+        clearTimeout(recordingTimeout)
+      }
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop()
+        mediaRecorder.stream.getTracks().forEach(track => track.stop())
       }
     }
-  }
+  }, [mediaRecorder, recordingTimeout])
 
-  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return
-    const file = e.target.files[0]
-
-    if (file.size > 20 * 1024 * 1024) {
-      toast.error('File size should be less than 20MB.')
-      return
-    }
-
-    setUploading(true)
-    const reader = new FileReader()
-    reader.onload = () => {
-      const text = reader.result as string
+  // if query is not empty, submit the query
+  useEffect(() => {
+    if (isFirstRender.current && query && query.trim().length > 0) {
       append({
         role: 'user',
-        content: `Uploaded file content:\n${text}\n\nPlease answer in ${selectedLanguage} only.`
+        content: `${query}\n\nPlease answer in ${selectedLanguage} only.`
       })
-      setUploading(false)
+      isFirstRender.current = false
     }
-    reader.onerror = () => {
-      toast.error('Failed to read file.')
-      setUploading(false)
-    }
-    reader.readAsText(file)
-    e.target.value = '' // reset input to allow same file reupload
-  }
-  const submitMessage = (message: string) => {
-  append({
-    role: 'user',
-    content: `${message}\n\nPlease answer in ${selectedLanguage} only.`
-  })
-}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query])
 
+  // Custom handleSubmit to append language instruction
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (input.trim().length === 0) return
+    append({
+      role: 'user',
+      content: `${input}\n\nPlease answer in ${selectedLanguage} only.`
+    })
+    handleInputChange({
+      target: { value: '' }
+    } as React.ChangeEvent<HTMLTextAreaElement>)
+  }
+
+  // Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => {
+        const base64String = reader.result as string
+        resolve(base64String)
+      }
+      reader.onerror = error => {
+        reject(error)
+      }
+    })
+  }
+
+  // OCR Upload handlers
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '' // Clear any previous selection
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+
+    try {
+      // Validate file type
+      const validTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/jpg',
+        'application/pdf'
+      ]
+      if (!validTypes.includes(file.type)) {
+        throw new Error('Please upload a PDF or image file (JPEG/PNG).')
+      }
+
+      // Validate file size (e.g., 10MB limit)
+      const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+      if (file.size > MAX_SIZE) {
+        throw new Error('File too large. Maximum size is 10MB.')
+      }
+
+      // Get API key
+      const apiKey = process.env.NEXT_PUBLIC_MISTRAL_API_KEY
+      if (!apiKey) {
+        throw new Error('Mistral API key not found in environment variables.')
+      }
+
+      // Convert file to base64 data URL
+      const dataUrl = await fileToBase64(file)
+
+      // Create Mistral client
+      const client = new Mistral({ apiKey })
+
+      // Process OCR directly using the Mistral client
+      const ocrResponse = await client.ocr.process({
+        model: 'mistral-ocr-latest',
+        document: {
+          type: 'document_url',
+          documentUrl: dataUrl
+        },
+        includeImageBase64: false
+      })
+
+      // Extract text from OCR response
+      const ocrText = ocrResponse.pages.map(page => page.markdown).join('\n\n')
+
+      // Add the extracted text to the chat
+      append({
+        role: 'user',
+        content: `[Uploaded document: ${file.name}]\n\n${ocrText}\n\nPlease answer in ${selectedLanguage} only.`
+      })
+
+      toast.success('Document successfully processed!')
+    } catch (error: any) {
+      console.error('Error during OCR processing:', error)
+
+      // Add error message to chat
+      append({
+        role: 'user',
+        content: `[Attempted to upload: ${file.name}]`
+      })
+      append({
+        role: 'system',
+        content: `OCR failed: ${
+          error?.message || 'Unknown error processing document'
+        }`
+      })
+
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to process document'
+      )
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
 
   return (
-    <section className="flex flex-col h-full w-full">
-      <div className="flex items-center justify-between p-4 border-b border-gray-300">
-        <ModelSelector models={models ?? []} />
-        <SearchModeToggle />
-        <select
-          value={selectedLanguage}
-          onChange={e => setSelectedLanguage(e.target.value)}
-          className="border rounded px-2 py-1"
-          aria-label="Select language"
-        >
-          {LANGUAGES.map(lang => (
-            <option key={lang.value} value={lang.value}>
-              {lang.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {showEmptyScreen ? (
-        <EmptyScreen submitMessage={submitMessage} />
-      ) : (
-        <div className="flex-1 overflow-auto px-4 py-2">
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                'my-2 p-3 rounded-md',
-                msg.role === 'user' ? 'bg-blue-100 self-end' : 'bg-gray-100 self-start'
-              )}
-            >
-              {msg.content}
-            </div>
-          ))}
-          {isLoading && <p className="text-gray-500">Loading...</p>}
+    <div
+      className={cn(
+        'mx-auto w-full',
+        messages.length > 0
+          ? 'fixed bottom-0 left-0 right-0 bg-background'
+          : 'fixed bottom-8 left-0 right-0 top-6 flex flex-col items-center justify-center'
+      )}
+    >
+      {messages.length === 0 && (
+        <div className="mb-10 flex flex-col items-center gap-4">
+          <IconLogo className="size-12 text-muted-foreground" />
+          <p className="text-center text-3xl font-semibold">
+            How can I help you today?
+          </p>
         </div>
       )}
-
       <form
-        onSubmit={handleSubmit}
-        className="flex items-center border-t border-gray-300 p-2 space-x-2"
+        onSubmit={handleFormSubmit}
+        className={cn(
+          'max-w-3xl w-full mx-auto',
+          messages.length > 0 ? 'px-2 pb-4' : 'px-6'
+        )}
       >
-        <button
-          type="button"
-          onClick={isRecording ? stopRecording : startRecording}
-          className={cn(
-            'p-2 rounded-full',
-            isRecording ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'
-          )}
-          aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-          title={isRecording ? 'Stop recording' : 'Start recording'}
-          disabled={isLoading}
-        >
-          <Mic size={20} />
-        </button>
+        <div className="relative flex flex-col w-full gap-2 bg-muted rounded-3xl border border-input">
+          {/* Language Selector */}
+          <div className="flex items-center gap-2 px-4 pt-4">
+            <label htmlFor="language-select" className="text-sm font-medium">
+              Language:
+            </label>
+            <select
+              id="language-select"
+              value={selectedLanguage}
+              onChange={e => setSelectedLanguage(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              {LANGUAGES.map(lang => (
+                <option key={lang.value} value={lang.value}>
+                  {lang.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Textarea
+            ref={inputRef}
+            name="input"
+            rows={2}
+            maxRows={5}
+            tabIndex={0}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
+            placeholder="Ask a question..."
+            spellCheck={false}
+            value={input}
+            className="resize-none w-full min-h-12 bg-transparent border-0 p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            onChange={e => {
+              handleInputChange(e)
+              setShowEmptyScreen(e.target.value.length === 0)
+            }}
+            onKeyDown={e => {
+              if (
+                e.key === 'Enter' &&
+                !e.shiftKey &&
+                !isComposing &&
+                !enterDisabled
+              ) {
+                if (input.trim().length === 0) {
+                  e.preventDefault()
+                  return
+                }
+                e.preventDefault()
+                const textarea = e.target as HTMLTextAreaElement
+                textarea.form?.requestSubmit()
+              }
+            }}
+            onFocus={() => setShowEmptyScreen(true)}
+            onBlur={() => setShowEmptyScreen(false)}
+          />
 
-        <Textarea
-          ref={inputRef}
-          value={input}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onCompositionStart={() => setIsComposing(true)}
-          onCompositionEnd={() => setIsComposing(false)}
-          placeholder="Type your message or use the microphone..."
-          minRows={1}
-          maxRows={6}
-          disabled={isLoading}
-          className="flex-grow resize-none border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-400"
-          spellCheck={false}
-          aria-label="Message input"
-        />
+          {/* Bottom menu area */}
+          <div className="flex items-center justify-between p-3">
+            <div className="flex items-center gap-2">
+              <ModelSelector models={models || []} />
+              <SearchModeToggle />
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Voice Input Button */}
+              <Button
+                type="button"
+                size="icon"
+                variant={isRecording ? "default" : "outline"}
+                className={cn(
+                  "rounded-full",
+                  isRecording && "bg-red-500 hover:bg-red-600 text-white",
+                  isTranscribing && "animate-pulse"
+                )}
+                onClick={toggleRecording}
+                disabled={isTranscribing}
+                title={isRecording ? "Stop recording" : "Start voice input"}
+              >
+                {isRecording ? (
+                  <MicOff size={20} />
+                ) : isTranscribing ? (
+                  <span className="text-xs">...</span>
+                ) : (
+                  <Mic size={20} />
+                )}
+              </Button>
 
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={onFileInputChange}
-          accept=".txt,.pdf"
-        />
+              {/* OCR Upload Button */}
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="rounded-full"
+                onClick={handleUploadClick}
+                disabled={uploading}
+                title="Upload photo or PDF for OCR"
+              >
+                {uploading ? (
+                  <span className="animate-pulse text-xs">...</span>
+                ) : (
+                  <Paperclip size={20} />
+                )}
+              </Button>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                style={{ display: 'none' }}
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                disabled={uploading}
+              />
+              {messages.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleNewChat}
+                  className="shrink-0 rounded-full group"
+                  type="button"
+                  disabled={isLoading}
+                >
+                  <MessageCirclePlus className="size-4 group-hover:rotate-12 transition-all" />
+                </Button>
+              )}
+              <Button
+                type={isLoading ? 'button' : 'submit'}
+                size={'icon'}
+                variant={'outline'}
+                className={cn(isLoading && 'animate-pulse', 'rounded-full')}
+                disabled={input.length === 0 && !isLoading}
+                onClick={isLoading ? stop : undefined}
+              >
+                {isLoading ? <Square size={20} /> : <ArrowUp size={20} />}
+              </Button>
+            </div>
+          </div>
+        </div>
 
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="p-2 rounded-md hover:bg-gray-200"
-          aria-label="Upload file"
-          title="Upload file"
-          disabled={uploading || isLoading}
-        >
-          <Paperclip size={20} />
-        </button>
-
-        {isLoading ? (
-          <Button variant="secondary" onClick={stop} aria-label="Stop generating">
-            Stop
-          </Button>
-        ) : (
-          <Button type="submit" disabled={!input.trim()} aria-label="Send message">
-            <ArrowUp size={20} />
-          </Button>
+        {messages.length === 0 && (
+          <EmptyScreen
+            submitMessage={message => {
+              handleInputChange({
+                target: { value: message }
+              } as React.ChangeEvent<HTMLTextAreaElement>)
+            }}
+            className={cn(showEmptyScreen ? 'visible' : 'invisible')}
+          />
         )}
       </form>
-    </section>
+    </div>
   )
 }
