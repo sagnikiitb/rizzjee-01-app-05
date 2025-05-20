@@ -188,7 +188,7 @@ export function ChatPanel({
           })
           
           // Send to transcription API
-          const response = await fetch('/api/transcribe', {
+          const response = await fetch('/app/api/transcribe', {
             method: 'POST',
             body: formData
           })
