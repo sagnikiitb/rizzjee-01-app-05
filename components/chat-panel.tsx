@@ -170,40 +170,38 @@ export function ChatPanel({
         
         try {
           // Create audio blob
+          // Create audio blob
           const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
           
           // Create form data for API request
           const formData = new FormData()
+          // The third argument sets the filename, so the backend receives a File-like object
           formData.append('file', audioBlob, 'recording.webm')
           formData.append('language', getLanguageCode(selectedLanguage))
-
-          // Before fetch call
+          
+          // Before fetch call: log properties that exist on Blob
           console.log('Sending audio file:', {
-            name: audioBlob.name,
+            // name is not available on Blob, but you know what you set as filename
+            filename: 'recording.webm',
             size: audioBlob.size,
             type: audioBlob.type
           })
           
           // Send to transcription API
-          //const response = await fetch('/api/transcribe', {
-            //method: 'POST',
-            //body: formData
-          //})
           const response = await fetch('/api/transcribe', {
             method: 'POST',
             body: formData
           })
-          .then(r => {
-            console.log('Response status:', r.status)
-            return r.json()
-          })
-          .catch(err => console.error('Fetch error:', err))
+          
+          console.log('Response status:', response.status)
           
           if (!response.ok) {
             throw new Error('Transcription failed')
           }
           
           const result = await response.json()
+          
+
           
           if (result.text) {
             // Append transcribed text to current input
