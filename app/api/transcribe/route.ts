@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     //}
 const response = await openai.audio.transcriptions.create({
   file: audioFile,
-  model: "gpt-4o-transcribe",
+  model: "whisper-1",
   response_format: "text",
   prompt: "You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like 'thanks for watching' or other hallucinations.",
 });
