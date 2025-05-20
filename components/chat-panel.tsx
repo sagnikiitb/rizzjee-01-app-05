@@ -250,7 +250,7 @@ export function ChatPanel({
       </div>
 
       {showEmptyScreen ? (
-        <EmptyScreen submitMessage={submitMessage} />
+        <EmptyScreen submitMessage={handleSubmit} />
       ) : (
         <div className="flex-1 overflow-auto px-4 py-2">
           {messages.map((msg, idx) => (
