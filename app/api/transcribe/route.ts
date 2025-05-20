@@ -1,67 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs/promises'
 import { OpenAI } from 'openai'
 
-export const config = {
-  api: {
-    bodyParser: false
-  }
-}
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! })
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
-    const audio = formData.get('audio') as File | null
-    const language = formData.get('language')?.toString() || 'english'
+    const audioFile = formData.get('file') as File | null
+    const language = formData.get('language') as string | null || 'en'
 
-    if (!audio) return NextResponse.json({ error: 'No audio file sent' }, { status: 400 })
+    if (!audioFile) {
+      return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
+    }
 
-    // Save audio file temporarily
-    const buffer = Buffer.from(await audio.arrayBuffer())
-    const tempPath = `/tmp/audio-${Date.now()}.webm`
-    await fs.writeFile(tempPath, buffer)
+    // Convert the File (Web API) to a Blob and then to a ReadableStream for OpenAI
+    // Note: Next.js 13+ fetch API supports passing File directly in formData, so just use audioFile
 
-    // Call OpenAI Whisper API
-    const transcription = await openai.audio.transcriptions.create({
-      file: await fs.createReadStream(tempPath) as any,
-      model: 'whisper-1',
-      language: mapToISOCode(language)
+    // Create new FormData to send to OpenAI whisper endpoint
+    const openaiForm = new FormData()
+    openaiForm.append('file', audioFile, (audioFile as any).name || 'audio.webm')
+    openaiForm.append('model', 'whisper-1')
+    openaiForm.append('language', language)
+
+    // Call OpenAI transcription endpoint
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: openaiForm as any // Node FormData compatible
     })
 
-    await fs.unlink(tempPath) // Clean up temp file
+    if (!response.ok) {
+      const error = await response.json()
+      return NextResponse.json({ error }, { status: response.status })
+    }
 
-    return NextResponse.json({ transcript: transcription.text })
-  } catch (error: any) {
+    const json = await response.json()
+    // json.text contains the transcription result
+
+    return NextResponse.json({ text: json.text })
+  } catch (error) {
     console.error('Transcription error:', error)
-    return NextResponse.json({ error: error.message || 'Failed to transcribe' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-}
-
-function mapToISOCode(language: string): string {
-  const mapping: Record<string, string> = {
-    'Hindi (देवनागरी)': 'hi',
-    Hinglish: 'hi',
-    English: 'en',
-    Bhojpuri: 'bho',
-    Punjabi: 'pa',
-    Marathi: 'mr',
-    Gujarati: 'gu',
-    Tamil: 'ta',
-    Telugu: 'te',
-    Kannada: 'kn',
-    Malayalam: 'ml',
-    Urdu: 'ur',
-    Bengali: 'bn',
-    Odia: 'or',
-    Assamese: 'as',
-    Maithili: 'mai',
-    Dogri: 'doi',
-    Kashmiri: 'ks',
-    Manipuri: 'mni',
-    Santali: 'sat',
-    Sindhi: 'sd'
-  }
-  return mapping[language] || 'en'
 }
