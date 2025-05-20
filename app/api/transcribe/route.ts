@@ -8,12 +8,29 @@ const openai = new OpenAI({
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
+    // 1. Log all formData entries
+    console.log('Received form data entries:')
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`- ${key}: File (${value.name}, ${value.size} bytes, ${value.type})`)
+      } else {
+        console.log(`- ${key}: ${value}`)
+      }
+    }
     const audioFile = formData.get('file') as File | null
     const language = formData.get('language') as string | null || 'en'
 
     if (!audioFile) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
+    // 2. Verify audioFile properties
+    console.log('Audio file details:', {
+      exists: !!audioFile,
+      name: audioFile?.name || 'null',
+      size: audioFile?.size || 'null',
+      type: audioFile?.type || 'null',
+      lastModified: audioFile?.lastModified || 'null'
+    })
 
     // Convert the File (Web API) to a Blob and then to a ReadableStream for OpenAI
     // Note: Next.js 13+ fetch API supports passing File directly in formData, so just use audioFile
