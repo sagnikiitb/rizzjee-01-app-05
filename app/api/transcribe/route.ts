@@ -36,28 +36,33 @@ export async function POST(req: NextRequest) {
     // Note: Next.js 13+ fetch API supports passing File directly in formData, so just use audioFile
 
     // Create new FormData to send to OpenAI whisper endpoint
-    const openaiForm = new FormData()
-    openaiForm.append('file', audioFile, (audioFile as any).name || 'audio.webm')
-    openaiForm.append('model', 'gpt-4o-transcribe')
-    openaiForm.append('language', language)
-    openaiForm.append('temperature', '0')
-    openaiForm.append('prompt', 'You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like "thanks for watching" or other hallucinations.')
+    //const openaiForm = new FormData()
+    //openaiForm.append('file', audioFile, (audioFile as any).name || 'audio.webm')
+    //openaiForm.append('model', 'gpt-4o-transcribe')
+    //openaiForm.append('language', language)
+    //openaiForm.append('temperature', '0')
+    //openaiForm.append('prompt', 'You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like "thanks for watching" or other hallucinations.')
                       
 
     // Call OpenAI transcription endpoint
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: openaiForm as any // Node FormData compatible
-    })
+    //const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      //method: 'POST',
+      //headers: {
+        //Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      //},
+      //body: openaiForm as any // Node FormData compatible
+    //})
 
-    if (!response.ok) {
-      const error = await response.json()
-      return NextResponse.json({ error }, { status: response.status })
-    }
-
+    //if (!response.ok) {
+      //const error = await response.json()
+      //return NextResponse.json({ error }, { status: response.status })
+    //}
+const response = await openai.audio.transcriptions.create({
+  file: audioFile,
+  model: "gpt-4o-transcribe",
+  response_format: "json",
+  prompt: "You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like 'thanks for watching' or other hallucinations.",
+});
     const json = await response.json()
     // json.text contains the transcription result
 
