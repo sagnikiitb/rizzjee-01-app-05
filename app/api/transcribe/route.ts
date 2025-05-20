@@ -65,7 +65,7 @@ const response = await openai.audio.transcriptions.create({
 });
         
 
-    return response.text
+    return response.string
   } catch (error) {
     console.error('Transcription error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
