@@ -176,12 +176,28 @@ export function ChatPanel({
           const formData = new FormData()
           formData.append('file', audioBlob, 'recording.webm')
           formData.append('language', getLanguageCode(selectedLanguage))
+
+          // Before fetch call
+          console.log('Sending audio file:', {
+            name: audioBlob.name,
+            size: audioBlob.size,
+            type: audioBlob.type
+          })
           
           // Send to transcription API
+          //const response = await fetch('/api/transcribe', {
+            //method: 'POST',
+            //body: formData
+          //})
           const response = await fetch('/api/transcribe', {
             method: 'POST',
             body: formData
           })
+          .then(r => {
+            console.log('Response status:', r.status)
+            return r.json()
+          })
+          .catch(err => console.error('Fetch error:', err))
           
           if (!response.ok) {
             throw new Error('Transcription failed')
