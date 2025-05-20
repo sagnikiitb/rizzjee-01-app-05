@@ -60,13 +60,12 @@ export async function POST(req: NextRequest) {
 const response = await openai.audio.transcriptions.create({
   file: audioFile,
   model: "gpt-4o-transcribe",
-  response_format: "json",
+  response_format: "text",
   prompt: "You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like 'thanks for watching' or other hallucinations.",
 });
-    const json = await response.json()
-    // json.text contains the transcription result
+        
 
-    return NextResponse.json({ text: json.text })
+    return response.text
   } catch (error) {
     console.error('Transcription error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
