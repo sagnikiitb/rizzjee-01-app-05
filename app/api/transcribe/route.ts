@@ -63,7 +63,7 @@ const response = await openai.audio.transcriptions.create({
   response_format: "text",
   prompt: "You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like 'thanks for watching' or other hallucinations.",
 });
-        
+        console.log(response);
 
     return NextResponse.json({ text: response });
 
