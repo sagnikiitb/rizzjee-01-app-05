@@ -80,6 +80,7 @@ export function ChatPanel({
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const [audioChunks, setAudioChunks] = useState<Blob[]>([])
   const [isTranscribing, setIsTranscribing] = useState(false)
+  const [recordingLocked, setRecordingLocked] = useState(false)
 
   const handleCompositionStart = () => setIsComposing(true)
 
@@ -188,7 +189,7 @@ export function ChatPanel({
           })
           
           // Send to transcription API
-          const response = await fetch('/app/api/transcribe', {
+          const response = await fetch('/api/transcribe', {
             method: 'POST',
             body: formData
           })
@@ -232,13 +233,29 @@ export function ChatPanel({
   }
   
   // Toggle recording state
+  //const toggleRecording = () => {
+    //if (isRecording) {
+      //stopRecording()
+    //} else {
+      //startRecording()
+    //}
+  //}
   const toggleRecording = () => {
-    if (isRecording) {
-      stopRecording()
-    } else {
-      startRecording()
+  if (isRecording) {
+    if (recordingLocked) {
+      // Ignore stop if still locked
+      return
     }
+    stopRecording()
+    setIsRecording(false)
+  } else {
+    startRecording()
+    setIsRecording(true)
+    setRecordingLocked(true)
+    // Unlock stop after 600ms (adjust as needed)
+    setTimeout(() => setRecordingLocked(false), 600)
   }
+}
 
   // Clean up recording resources on unmount
   useEffect(() => {
