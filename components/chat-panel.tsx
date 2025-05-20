@@ -233,7 +233,7 @@ export function ChatPanel({
   return (
     <section className="flex flex-col h-full w-full">
       <div className="flex items-center justify-between p-4 border-b border-gray-300">
-        <ModelSelector models={models} />
+        <ModelSelector models={models ?? []} />
         <SearchModeToggle />
         <select
           value={selectedLanguage}
