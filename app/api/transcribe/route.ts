@@ -21,8 +21,11 @@ export async function POST(req: NextRequest) {
     // Create new FormData to send to OpenAI whisper endpoint
     const openaiForm = new FormData()
     openaiForm.append('file', audioFile, (audioFile as any).name || 'audio.webm')
-    openaiForm.append('model', 'whisper-1')
+    openaiForm.append('model', 'gpt-4o-transcribe')
     openaiForm.append('language', language)
+    openaiForm.append('temperature', '0')
+    openaiForm.append('prompt', 'You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like "thanks for watching" or other hallucinations.')
+                      
 
     // Call OpenAI transcription endpoint
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
