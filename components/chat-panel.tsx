@@ -229,6 +229,13 @@ export function ChatPanel({
     reader.readAsText(file)
     e.target.value = '' // reset input to allow same file reupload
   }
+  const submitMessage = (message: string) => {
+  append({
+    role: 'user',
+    content: `${message}\n\nPlease answer in ${selectedLanguage} only.`
+  })
+}
+
 
   return (
     <section className="flex flex-col h-full w-full">
@@ -250,7 +257,7 @@ export function ChatPanel({
       </div>
 
       {showEmptyScreen ? (
-        <EmptyScreen submitMessage={handleSubmit} />
+        <EmptyScreen submitMessage={submitMessage} />
       ) : (
         <div className="flex-1 overflow-auto px-4 py-2">
           {messages.map((msg, idx) => (
