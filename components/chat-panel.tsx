@@ -205,6 +205,7 @@ export function ChatPanel({
           
           if (result.text) {
             // Append transcribed text to current input
+            console.log(result.text);
             const newValue = input ? `${input} ${result.text}`.trim() : result.text
             handleInputChange({
               target: { value: newValue }
