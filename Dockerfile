@@ -3,9 +3,13 @@ FROM oven/bun:latest AS builder
 
 WORKDIR /app
 
-# Install dependencies (separated for better cache utilization)
+# Install dependencies
 COPY package.json bun.lockb ./
 RUN bun install
+
+# Update Next.js config for standalone output
+COPY next.config.mjs ./
+RUN sed -i 's/const nextConfig = {}/const nextConfig = { output: "standalone" }/' next.config.mjs
 
 # Copy source code and build
 COPY . .
@@ -16,12 +20,22 @@ RUN bun run build
 FROM oven/bun:latest AS runner
 WORKDIR /app
 
-# Copy only necessary files from builder
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/bun.lockb ./bun.lockb
-COPY --from=builder /app/node_modules ./node_modules
+ENV NODE_ENV=production
+ENV HOSTNAME="0.0.0.0"
+
+# Create a non-root user for better security
+RUN addgroup --system --gid 1001 bunjs
+RUN adduser --system --uid 1001 nextjs
+RUN chown -R nextjs:bunjs /app
+
+# Copy necessary files for the standalone output
+COPY --from=builder --chown=nextjs:bunjs /app/public ./public
+COPY --from=builder --chown=nextjs:bunjs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:bunjs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
 
 # Start production server
-CMD ["bun", "start", "-H", "0.0.0.0"]
+CMD ["bun", "run", "server.js"]
