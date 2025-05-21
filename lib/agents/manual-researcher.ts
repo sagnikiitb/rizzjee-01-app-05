@@ -23,8 +23,8 @@ Examples : \chemfig{A=B} , \chemfig{A-[1]B-[7]C}, \chemfig{A-[:50]B-[:-25]C}, \c
 # Solution
 A textual description of the solution. Enclose in-line formula STRICTLY in $<formula>$ math-tex syntax. 
 For chemistry, use \chemfig
-# Plots (optional)
-Output python plotly code for atleast 2 relevant plots to your answer
+# Plots 
+Output Python Plotly (NOT matplotlib) code for relevant plots in your answer
 # Compound Structure
 For chemistry answers involving key compounds, search up the compounds on https://www.chemtube3d.com and display search result URLs
 Examples : https://www.chemtube3d.com/pyrazine/ , https://www.chemtube3d.com/benzenemos/ , https://www.chemtube3d.com/h2o/ , https://www.chemtube3d.com/co2/ 
