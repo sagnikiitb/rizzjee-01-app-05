@@ -31,8 +31,8 @@ For chemistry, use the \chemfig{} latex package,
 Examples : \chemfig{A=B} , \chemfig{A-[1]B-[7]C}, \chemfig{A-[:50]B-[:-25]C}, \chemfig{A-[::50]B-[::-25]C}, \chemfig{A*5(-B=C-D-E=)}, \chemfig{A*5(-B=C-D)}
 # Solution
 A textual description of the solution. Enclose in-line formula STRICTLY in $<formula>$ math-tex syntax
-# Plots (optional)
-Output python plotly code for atleast 2 relevant plots to your answer, if subject is maths, or physics, or physical chemistry
+# Plots 
+Output Python Plotly (NOT matplotlib) code for atleast 2 relevant plots to your answer, if subject is maths, or physics, or physical chemistry
 # Compound Structure
 For chemistry answers involving key compounds, search up the compounds on https://www.chemtube3d.com and display search result URLs
 Examples : https://www.chemtube3d.com/pyrazine/ , https://www.chemtube3d.com/benzenemos/ , https://www.chemtube3d.com/h2o/ , https://www.chemtube3d.com/co2/ 
