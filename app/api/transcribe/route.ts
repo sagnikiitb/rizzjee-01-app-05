@@ -53,10 +53,9 @@ export async function POST(req: NextRequest) {
   const webmBuffer = Buffer.from(await file.arrayBuffer());
   const mp3Buffer = await convertWebmToMp3(webmBuffer);
 
-  const audioFile = await openai.files.create({
-    file: mp3Buffer,
-    purpose: 'transcription',
-    name: 'audio.mp3',
+  // Create a File object from the buffer
+  const audioFile = new File([mp3Buffer], 'audio.mp3', { 
+    type: 'audio/mpeg' 
   });
 
   const transcription = await openai.audio.transcriptions.create({
@@ -68,4 +67,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ text: transcription });
 }
-
