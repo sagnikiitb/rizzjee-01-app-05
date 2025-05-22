@@ -1,48 +1,74 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Readable } from 'stream';
-import fs from 'fs';
-import path from 'path';
-import FormData from 'form-data';
+import { NextRequest, NextResponse } from 'next/server'
+import { OpenAI } from 'openai'
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const file: File | null = formData.get('file') as unknown as File;
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    const formData = await req.formData()
+    // 1. Log all formData entries
+    console.log('Received form data entries:')
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        console.log(`- ${key}: File (${value.name}, ${value.size} bytes, ${value.type})`)
+      } else {
+        console.log(`- ${key}: ${value}`)
+      }
     }
+    const audioFile = formData.get('file') as File | null
+    const language = formData.get('language') as string | null || 'en'
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const form = new FormData();
-    form.append('file', buffer, {
-      filename: file.name || 'audio.webm',
-      contentType: 'audio/webm',
-    });
-    form.append('model', 'whisper-1');
-
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY!}`,
-        ...form.getHeaders(),
-      },
-      body: form as any,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('OpenAI API error:', data);
-      return NextResponse.json({ error: data }, { status: response.status });
+    if (!audioFile) {
+      return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
+    // 2. Verify audioFile properties
+    console.log('Audio file details:', {
+      exists: !!audioFile,
+      name: audioFile?.name || 'null',
+      size: audioFile?.size || 'null',
+      type: audioFile?.type || 'null',
+      lastModified: audioFile?.lastModified || 'null'
+    })
 
-    return NextResponse.json(data);
+    // Convert the File (Web API) to a Blob and then to a ReadableStream for OpenAI
+    // Note: Next.js 13+ fetch API supports passing File directly in formData, so just use audioFile
+
+    // Create new FormData to send to OpenAI whisper endpoint
+    //const openaiForm = new FormData()
+    //openaiForm.append('file', audioFile, (audioFile as any).name || 'audio.webm')
+    //openaiForm.append('model', 'gpt-4o-transcribe')
+    //openaiForm.append('language', language)
+    //openaiForm.append('temperature', '0')
+    //openaiForm.append('prompt', 'You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like "thanks for watching" or other hallucinations.')
+                      
+
+    // Call OpenAI transcription endpoint
+    //const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      //method: 'POST',
+      //headers: {
+        //Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      //},
+      //body: openaiForm as any // Node FormData compatible
+    //})
+
+    //if (!response.ok) {
+      //const error = await response.json()
+      //return NextResponse.json({ error }, { status: response.status })
+    //}
+const response = await openai.audio.transcriptions.create({
+  file: audioFile,
+  model: "whisper-1",
+  response_format: "text",
+  prompt: "You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like 'thanks for watching' or other hallucinations.",
+});
+        console.log(response);
+
+    return NextResponse.json({ text: response });
+
   } catch (error) {
-    console.error('Server error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Transcription error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
-
