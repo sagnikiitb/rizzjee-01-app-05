@@ -17,9 +17,10 @@ export async function POST(req: NextRequest) {
         console.log(`- ${key}: ${value}`)
       }
     }
-    const audioFile = formData.get('file') as File | null
+    //const audioFile = formData.get('file') as File | null
+	const audioFile_input = formData.get('file') as File | null
     const language = formData.get('language') as string | null || 'en'
-
+	var audioFile = audioFile_input
     if (!audioFile) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
