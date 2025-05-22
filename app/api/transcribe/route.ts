@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     if (!audioFile) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
+    audioFile?.type = "audio/webm"
     // 2. Verify audioFile properties
     console.log('Audio file details:', {
       exists: !!audioFile,
