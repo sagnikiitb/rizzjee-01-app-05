@@ -1,65 +1,71 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { OpenAI } from 'openai'
-import * as fs from 'fs/promises'
-import path from 'path'
-import os from 'os'
+'use server'
+
+import { OpenAI } from 'openai';
+import { NextRequest, NextResponse } from 'next/server';
+import ffmpeg from 'fluent-ffmpeg';
+import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { writeFile, readFile, unlink } from 'fs/promises';
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+async function convertWebmToMp3(webmBuffer: Buffer): Promise<Buffer> {
+  const inputPath = join(tmpdir(), `input-${Date.now()}.webm`);
+  const outputPath = join(tmpdir(), `output-${Date.now()}.mp3`);
+
+  await writeFile(inputPath, webmBuffer);
+
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .toFormat('mp3')
+      .save(outputPath)
+      .on('end', async () => {
+        try {
+          const mp3Buffer = await readFile(outputPath);
+          await unlink(inputPath);
+          await unlink(outputPath);
+          resolve(mp3Buffer);
+        } catch (err) {
+          reject(err);
+        }
+      })
+      .on('error', async (err) => {
+        await unlink(inputPath).catch(() => {});
+        await unlink(outputPath).catch(() => {});
+        reject(err);
+      });
+  });
+}
 
 export async function POST(req: NextRequest) {
-  try {
-    const formData = await req.formData()
+  const form = await req.formData();
+  const file = form.get('file') as File;
 
-    console.log('Received form data entries:')
-    for (const [key, value] of formData.entries()) {
-      if (value instanceof File) {
-        console.log(`- ${key}: File (${value.name}, ${value.size} bytes, ${value.type})`)
-      } else {
-        console.log(`- ${key}: ${value}`)
-      }
-    }
-
-	const audioFile = formData.get('file') as File | null
-    const language = formData.get('language') as string | null || 'en'
-	//var audioFile = audioFile_input
-    if (!audioFile) {
-      return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
-    }
-
-    console.log('Audio file details:', {
-      exists: !!audioFile,
-      name: audioFile?.name || 'null',
-      size: audioFile?.size || 'null',
-      type: audioFile?.type || 'null',
-      lastModified: audioFile?.lastModified || 'null'
-    })
-  const correctedFile = new File(
-  [await audioFile.arrayBuffer()], // original file contents
-  audioFile.name || 'recording.webm', // preserve name
-  { type: 'audio/webm' } // force correct MIME type
-)
-
-    console.log('Corrected file details:', {
-      exists: !!correctedFile,
-      name: correctedFile?.name || 'null',
-      size: correctedFile?.size || 'null',
-      type: correctedFile?.type || 'null',
-      lastModified: correctedFile?.lastModified || 'null'
-    })
-
-const response = await openai.audio.transcriptions.create({
-  file: correctedFile,
-  model: "whisper-1",
-  response_format: "text",
-  prompt: "You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like 'thanks for watching' or other hallucinations.",
-});
-        console.log(response);
-
-    return NextResponse.json({ text: response });
-
-  } catch (error) {
-    console.error('Transcription error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  if (!file) {
+    return NextResponse.json({ error: 'No file received' }, { status: 400 });
   }
+
+  const webmBuffer = Buffer.from(await file.arrayBuffer());
+  const mp3Buffer = await convertWebmToMp3(webmBuffer);
+
+  const audioFile = await openai.files.create({
+    file: mp3Buffer,
+    purpose: 'transcription',
+    name: 'audio.mp3',
+  });
+
+  const transcription = await openai.audio.transcriptions.create({
+    file: audioFile,
+    model: 'whisper-1',
+    language: 'en',
+    response_format: 'text',
+  });
+
+  return NextResponse.json({ text: transcription });
 }
+
