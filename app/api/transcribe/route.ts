@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OpenAI } from 'openai'
-
+import * as fs from 'fs/promises'
+import path from 'path'
+import os from 'os'
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
@@ -18,13 +20,13 @@ export async function POST(req: NextRequest) {
       }
     }
     //const audioFile = formData.get('file') as File | null
-	var audioFile = formData.get('file') as File | null
+	const audioFile = formData.get('file') as File | null
     const language = formData.get('language') as string | null || 'en'
 	//var audioFile = audioFile_input
     if (!audioFile) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
-    audioFile.type = "audio/webm"
+    //audioFile.type = "audio/webm"
     // 2. Verify audioFile properties
     console.log('Audio file details:', {
       exists: !!audioFile,
@@ -33,7 +35,19 @@ export async function POST(req: NextRequest) {
       type: audioFile?.type || 'null',
       lastModified: audioFile?.lastModified || 'null'
     })
-
+  const correctedFile = new File(
+  [await audioFile.arrayBuffer()], // original file contents
+  audioFile.name || 'recording.webm', // preserve name
+  { type: 'audio/webm' } // force correct MIME type
+)
+ // 2. Verify audioFile properties
+    console.log('Corrected file details:', {
+      exists: !!correctedFile,
+      name: correctedFile?.name || 'null',
+      size: correctedFile?.size || 'null',
+      type: correctedFile?.type || 'null',
+      lastModified: correctedFile?.lastModified || 'null'
+    })
     // Convert the File (Web API) to a Blob and then to a ReadableStream for OpenAI
     // Note: Next.js 13+ fetch API supports passing File directly in formData, so just use audioFile
 
@@ -60,7 +74,7 @@ export async function POST(req: NextRequest) {
       //return NextResponse.json({ error }, { status: response.status })
     //}
 const response = await openai.audio.transcriptions.create({
-  file: audioFile,
+  file: correctedFile,
   model: "whisper-1",
   response_format: "text",
   prompt: "You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like 'thanks for watching' or other hallucinations.",
