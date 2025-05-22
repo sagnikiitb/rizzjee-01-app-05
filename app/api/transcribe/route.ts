@@ -10,7 +10,7 @@ const openai = new OpenAI({
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
-    // 1. Log all formData entries
+
     console.log('Received form data entries:')
     for (const [key, value] of formData.entries()) {
       if (value instanceof File) {
@@ -19,15 +19,14 @@ export async function POST(req: NextRequest) {
         console.log(`- ${key}: ${value}`)
       }
     }
-    //const audioFile = formData.get('file') as File | null
+
 	const audioFile = formData.get('file') as File | null
     const language = formData.get('language') as string | null || 'en'
 	//var audioFile = audioFile_input
     if (!audioFile) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 })
     }
-    //audioFile.type = "audio/webm"
-    // 2. Verify audioFile properties
+
     console.log('Audio file details:', {
       exists: !!audioFile,
       name: audioFile?.name || 'null',
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
   audioFile.name || 'recording.webm', // preserve name
   { type: 'audio/webm' } // force correct MIME type
 )
- // 2. Verify audioFile properties
+
     console.log('Corrected file details:', {
       exists: !!correctedFile,
       name: correctedFile?.name || 'null',
@@ -48,31 +47,7 @@ export async function POST(req: NextRequest) {
       type: correctedFile?.type || 'null',
       lastModified: correctedFile?.lastModified || 'null'
     })
-    // Convert the File (Web API) to a Blob and then to a ReadableStream for OpenAI
-    // Note: Next.js 13+ fetch API supports passing File directly in formData, so just use audioFile
 
-    // Create new FormData to send to OpenAI whisper endpoint
-    //const openaiForm = new FormData()
-    //openaiForm.append('file', audioFile, (audioFile as any).name || 'audio.webm')
-    //openaiForm.append('model', 'gpt-4o-transcribe')
-    //openaiForm.append('language', language)
-    //openaiForm.append('temperature', '0')
-    //openaiForm.append('prompt', 'You are transcribing audio to text for a STEM Student. Transcribe the following audio precisely without adding phrases like "thanks for watching" or other hallucinations.')
-                      
-
-    // Call OpenAI transcription endpoint
-    //const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      //method: 'POST',
-      //headers: {
-        //Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
-      //},
-      //body: openaiForm as any // Node FormData compatible
-    //})
-
-    //if (!response.ok) {
-      //const error = await response.json()
-      //return NextResponse.json({ error }, { status: response.status })
-    //}
 const response = await openai.audio.transcriptions.create({
   file: correctedFile,
   model: "whisper-1",
