@@ -1,13 +1,13 @@
 'use client';
-import React, { FC, memo, useState, useEffect, useRef } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard';
 import { Button } from '@/components/ui/button';
+import PlotlyGraph from '@/components/ui/PlotlyGraph';
+import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard';
 import { generateId } from 'ai';
 import { Check, Copy, Download, PlayCircle } from 'lucide-react';
-import PlotlyGraph from '@/components/ui/PlotlyGraph';
-import type { PlotData, Layout } from 'plotly.js';
+import type { Layout, PlotData } from 'plotly.js';
+import { FC, memo, useEffect, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { coldarkDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 let plot_data: Partial<PlotData>[];
 let plot_layout: Partial<Layout>;
@@ -71,6 +71,8 @@ const [graphError, setGraphError] = useState<string | null>(null);
 const [pyodideLoaded, setPyodideLoaded] = useState(false);
 const [pyodideLoading, setPyodideLoading] = useState(false);
 const [logs, setLogs] = useState<string[]>([]);
+const isPlotlyCode = language === 'python' && value.includes('plotly');
+
 
 
 // ----------------------------------------------------------------------------
@@ -81,7 +83,18 @@ const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
 setLogs((prev) => [...prev, `[${timestamp}] ${message}`]);
 console.log(`[Pyodide] ${message}`);
 };
+//-----------------------------------------------------------------------------
+//Function to auto start graph generation after 2 sec delay
+//-----------------------------------------------------------------------------
+useEffect(() => {
+  if (isPlotlyCode && !isGenerating && !pyodideLoading) {
+    const timer = setTimeout(() => {
+      generateGraph();
+    }, 2000);
 
+    return () => clearTimeout(timer);
+  }
+}, [isPlotlyCode, isGenerating, pyodideLoading]);
 // ----------------------------------------------------------------------------
 // Function to programmatically load Pyodide if not loaded.
 // ----------------------------------------------------------------------------
@@ -535,7 +548,6 @@ run(); // <-- this will now contain all logic and logs
 
 };
 
-const isPlotlyCode = language === 'python' && value.includes('plotly');
 
 return (
 <div className="relative w-full font-sans codeblock bg-neutral-800">
