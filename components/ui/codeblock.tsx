@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import PlotlyGraph from '@/components/ui/PlotlyGraph';
 import { useCopyToClipboard } from '@/lib/hooks/use-copy-to-clipboard';
 import { generateId } from 'ai';
-import { Check, Copy, Download, PlayCircle } from 'lucide-react';
+import { Check, Copy, Download, Eye, PlayCircle, Terminal } from 'lucide-react';
 import type { Layout, PlotData } from 'plotly.js';
 import { FC, memo, useEffect, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -72,9 +72,8 @@ const [pyodideLoaded, setPyodideLoaded] = useState(false);
 const [pyodideLoading, setPyodideLoading] = useState(false);
 const [logs, setLogs] = useState<string[]>([]);
 const isPlotlyCode = language === 'python' && value.includes('plotly');
-
-
-
+const [codeVisible, setCodeVisible] = useState(false);
+const [logVisible, setLogVisible] = useState(false);
 // ----------------------------------------------------------------------------
 // Function to add a log entry with timestamp.
 // ----------------------------------------------------------------------------
@@ -201,7 +200,26 @@ const onCopy = () => {
 if (isCopied) return;
 copyToClipboard(value);
 };
-
+// ----------------------------------------------------------------------------
+// Function to show code
+// ----------------------------------------------------------------------------
+const showCode = () => {
+if(codeVisible) {
+  setCodeVisible(false);
+  return;
+}
+setCodeVisible(true);
+};
+// ----------------------------------------------------------------------------
+// Function to show log
+// ----------------------------------------------------------------------------
+const showLog = () => {
+if(logVisible) {
+  setLogVisible(false);
+  return;
+}
+setLogVisible(true);
+};
 // ----------------------------------------------------------------------------
 // Main function to generate the Plotly graph via Pyodide.
 // ----------------------------------------------------------------------------
@@ -581,6 +599,24 @@ disabled={isGenerating || pyodideLoading}
 <span className="sr-only">Download</span>
 </Button>
 <Button
+  variant="ghost"
+  className="focus-visible:ring-1"
+  onClick={showCode}
+  size="icon"
+>
+  <Eye className="w-4 h-4" />
+  <span className="sr-only">Show Code</span>
+</Button>
+<Button
+  variant="ghost"
+  className="focus-visible:ring-1"
+  onClick={showLog}
+  size="icon"
+>
+  <Terminal className="w-4 h-4" />
+  <span className="sr-only">Show Log</span>
+</Button>
+<Button
          variant="ghost"
          size="icon"
          className="text-xs focus-visible:ring-1 focus-visible:ring-offset-0"
@@ -591,7 +627,7 @@ disabled={isGenerating || pyodideLoading}
 </Button>
 </div>
 </div>
-<SyntaxHighlighter
+{codeVisible &&(<SyntaxHighlighter
 language={language}
 style={coldarkDark}
 PreTag="div"
@@ -614,7 +650,7 @@ fontFamily: 'var(--font-mono)'
 >
 {value}
 </SyntaxHighlighter>
-
+)}
   {isPlotlyCode && graphVisible &&(
     <div className="mt-4">
       {(isGenerating || pyodideLoading) && (
@@ -662,7 +698,7 @@ fontFamily: 'var(--font-mono)'
         </div>
       )}
 
-      {logs.length > 0 && (
+      {logs.length > 0 && logVisible &&(
         <div className="mb-4 border border-gray-300 rounded-md">
           <div className="bg-gray-100 px-4 py-2 font-mono text-sm font-bold border-b border-gray-300 flex justify-between items-center">
             <span>Execution Logs</span>
