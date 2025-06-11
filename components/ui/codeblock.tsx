@@ -530,7 +530,8 @@ run(); // <-- this will now contain all logic and logs
   //window.Plotly.purge(graphId);
   //window.Plotly.newPlot(graphId, figureData.data, figureData.layout || {});
   //addLog('Plot rendered successfully!');
-  //setGraphVisible(true);
+  setGraphVisible(true);
+
 } catch (error: any) {
   //console.error('Graph error:', error);
   addLog(`Error: ${error.message}`);
@@ -614,7 +615,7 @@ fontFamily: 'var(--font-mono)'
 {value}
 </SyntaxHighlighter>
 
-  {isPlotlyCode && (
+  {isPlotlyCode && graphVisible &&(
     <div className="mt-4">
       {(isGenerating || pyodideLoading) && (
         <div className="p-4 mb-4 text-sm text-blue-700 bg-blue-100 rounded-md flex items-center">
